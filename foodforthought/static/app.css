@@ -360,3 +360,14 @@ h1 .badge { font-family: system-ui, sans-serif; font-weight: 400; vertical-align
 @media (max-width: 600px) {
   .charts, .grid.four { grid-template-columns: 1fr; }
 }
+
+.nutrient-groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 1.6rem; }
+.nutrient-groups h3 { margin-top: 0.6rem; }
+.nutrient-groups table { font-size: 0.9rem; }
+input.short { width: 6rem !important; }
+.card-head .inline-row label { margin: 0; font-weight: 400; }
+.faded-card { opacity: 0.75; }
+ol { padding-left: 1.3rem; }
+ol li { margin-bottom: 0.3rem; overflow-wrap: anywhere; }
+@media (max-width: 900px) { .nutrient-groups { grid-template-columns: 1fr; } }
+.nutrient-groups td:last-child { white-space: nowrap; }

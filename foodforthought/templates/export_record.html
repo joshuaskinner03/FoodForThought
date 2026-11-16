@@ -74,6 +74,14 @@ article { margin: 1rem 0; padding-bottom: 0.6rem; border-bottom: 1px solid #e3e3
 </table>
 {% else %}<p class="muted">None.</p>{% endif %}
 
+<h2>Energy and macronutrient targets</h2>
+{% if record.targets %}
+<table>
+  <tr><th>Date</th><th>Based on</th><th>BMR, kcal</th><th>Activity factor</th><th>Adjustment, kcal</th><th>Energy, kcal</th><th>Protein, g</th><th>Fat, g</th><th>Carbohydrate, g</th></tr>
+  {% for item in record.targets %}<tr><td>{{ item.set_on|nice_date }}</td><td>{{ item.equation }}, {{ item.sex }}, age {{ item.age }}, {{ item.weight_kg|plain }} kg, {{ item.height_cm|plain }} cm</td><td>{{ item.bmr_kcal|number(0) }}</td><td>{{ item.pal|plain }}</td><td>{{ item.adjustment_kcal|number(0) }}</td><td>{{ item.energy_kcal|number(0) }}</td><td>{{ item.protein_g|number(0) }}</td><td>{{ item.fat_g|number(0) }}</td><td>{{ item.carbohydrate_g|number(0) }}</td></tr>{% endfor %}
+</table>
+{% else %}<p class="muted">None.</p>{% endif %}
+
 <h2>Letters</h2>
 {% for item in record.letters %}
 <article><h3>{{ item.letter_date|nice_date }}{% if item.subject %}: {{ item.subject }}{% endif %}</h3><p class="muted pre">To: {{ item.recipient_name }}

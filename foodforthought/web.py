@@ -32,6 +32,7 @@ MESSAGES = {
     "paid": "Payment recorded.",
     "erased": "The client's record has been erased.",
     "logo-saved": "Logo saved.",
+    "imported": "Food database imported. Check the report below.",
     "series-clash": "Saved the repeat appointments. Note: at least one overlaps another appointment.",
 }
 
@@ -43,6 +44,7 @@ ERRORS = {
     "practice": "Add your practice details in Settings before issuing an invoice.",
     "has-payments": "Delete the payments on this invoice before voiding it.",
     "payment": "Give a valid date and an amount above zero.",
+    "portion": "Give the portion a name and a weight in grams above zero.",
     "erase-name": "The name typed did not match, so nothing was erased.",
 }
 

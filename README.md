@@ -3,12 +3,11 @@
 Free, open-source, local-only practice management for a private nutritionist.
 One user, one device, no cloud.
 
-**Status: Phase 1 complete.** Working now: client records, appointment diary,
-session notes, custom forms, consent records, encrypted file attachments,
-measurements with progress charts, invoices and receipts as PDF, an income
-summary, letters as PDF, per-client export and erasure, activity log, password
-and auto-lock, encrypted backup and restore. Still to come: nutrition analysis
-(Phase 2) and optional local AI drafting (Phase 3).
+**Status: Phase 2, step 1 of 3.** Working now: everything in Phase 1 (client
+records, diary, notes, forms, consent, files, measurements, invoices, letters,
+export and erasure, backup), plus the food database and energy and
+macronutrient targets. Still to come: food diaries and analysis (step 2),
+recipes and meal plans (step 3), and optional local AI drafting (Phase 3).
 
 ## Run it
 
@@ -69,11 +68,52 @@ restore.
 - **Letters:** templates with fill-in fields such as `[Client name]`, saved per
   client and exported as PDF. Starting a letter to a GP warns if no consent to
   share with the GP is recorded.
+- **Foods:** the UK national food tables (CoFID 2021) are imported from the
+  Excel file you download from gov.uk, never bundled. Search by any words in
+  any order, see nutrients for any weight, save your own portions, and add
+  foods of your own from pack labels.
+- **Targets:** basal metabolic rate from Henry (2005) or Mifflin-St Jeor
+  (1990), an activity factor, an adjustment in kcal, then protein, fat and
+  carbohydrate targets. Each set is kept with the figures it was based on.
 - **Dates** are typed and shown as day/month/year whatever language Chrome is
   set to.
 
 Two note templates, one intake form and one GP letter template are created on
 first use as starting points. Edit or hide them under *Templates and forms*.
+
+### The food database import
+
+*Foods → National food database* reads the Proximates, Inorganics and Vitamins
+sheets of the CoFID workbook. It finds the columns by their codes (PROT, FAT,
+CHO and so on) and falls back to the column titles. In the file, `N` means the
+nutrient is present but the amount is not known: it is stored as "not known",
+never as zero. `Tr` (trace) is stored as zero and labelled. Bracketed figures
+are estimates and are marked with an asterisk.
+
+After each import a report shows what was read. It includes a check that each
+food's energy agrees with its protein, fat, carbohydrate and alcohol at 4, 9,
+3.75 and 7 kcal per gram. If many foods fail that check, the columns were read
+wrongly and the figures must not be used.
+
+Importing again updates foods in place, so saved portions and anything that
+refers to a food are kept. CoFID has no portion sizes, so portions are your
+own. Source: McCance and Widdowson's The Composition of Foods Integrated
+Dataset 2021, Public Health England, under the Open Government Licence v3.0.
+
+### Energy equations
+
+- Henry (2005), weight and height version, kcal a day: men 18 to 29,
+  14.4W + 3.13H + 113; men 30 to 59, 11.4W + 5.41H - 137; men 60 and over,
+  11.4W + 5.41H - 256; women 18 to 29, 10.4W + 6.15H - 282; women 30 to 59,
+  8.18W + 5.02H - 11.6; women 60 and over, 8.52W + 4.21H + 10.7. W is weight
+  in kg, H is height in cm.
+- Mifflin-St Jeor (1990): 10W + 6.25H - 5 x age, plus 5 for men or minus 161
+  for women.
+
+Both are for adults aged 18 and over. Energy target = basal metabolic rate x
+activity factor + adjustment. Carbohydrate grams use 3.75 kcal per gram
+(monosaccharide equivalents) to match CoFID. Checked against hand calculations
+in `tests/test_targets.py`.
 
 ### Body fat equations
 

@@ -2,6 +2,45 @@
 
 Do these in order. Note anything that differs from "Expect".
 
+## Phase 2, step 1: foods and targets
+
+The importer was built from the published guide to the CoFID file and tested on
+files made to that description, not on the real file. Steps 3 and 4 are the
+ones that matter most.
+
+1. **Swap the program folder.** In *Linux files*, delete the old
+   `foodforthought` folder, extract the new zip and move its `foodforthought`
+   folder in. Start as before:
+   ```
+   cd foodforthought
+   bash start.sh
+   ```
+   Expect the one-off setup message (internet needed this once).
+2. **Download the food tables.** Open Foods → National food database. Follow
+   the link to gov.uk and download the Excel file "McCance and Widdowson's
+   composition of foods integrated dataset" (about 4 MB).
+3. **Import.** Choose that file and press Import. Note how long it takes. Then
+   send me the report it shows, in particular:
+   - Foods: expect roughly 2,900.
+   - Nutrients: expect 45 of 45, or tell me which are listed as not found.
+   - Energy check: expect nearly all foods to agree. If it says "That is too
+     few", stop and tell me.
+   - Sheets: the three lines, including "from row" and "matched by".
+4. **Spot-check three foods.** Open the Excel file itself (the Files app can
+   open it) and pick three foods. For each, compare energy, protein, calcium
+   and vitamin C in the file with the food's page in the app. They must match.
+5. **Search.** In Foods, type `milk semi`, then `bread wholemeal`. Expect the
+   list to narrow while typing and sensible foods at the top.
+6. **Weights and portions.** On a food page, type 250 in "Show for" and press
+   Show: figures should scale. Add a portion ("1 glass", 200) and click it.
+7. **A food of your own.** New food of my own → name, energy and a few values
+   from any pack. Expect it marked "Mine" and listed first in a search.
+8. **Targets.** Open a client with a sex, date of birth and a weight and height
+   under Measurements → Targets → Work out new targets. Expect age, weight and
+   height filled in. Save, and check the figures look reasonable.
+9. **Backup.** Download a new encrypted backup. It will be a few MB larger
+   because it now holds the food tables.
+
 ## Phase 1b
 
 1. **Swap the program folder.** In *Linux files*, delete the old

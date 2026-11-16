@@ -1,0 +1,28 @@
+{% macro rows(items) %}
+<table class="numbers">
+  <thead><tr><th>Food</th><th>Energy, kcal</th><th>Protein, g</th><th>Fat, g</th><th>Carbohydrate, g</th></tr></thead>
+  <tbody>
+    {% for f in items %}
+    <tr{% if f.archived %} class="faded"{% endif %}>
+      <td>
+        <a href="/foods/{{ f.id }}">{{ f.name }}</a>
+        {% if f.custom %}<span class="badge">Mine</span>{% endif %}{% if f.archived %} <span class="badge cancelled">Hidden</span>{% endif %}
+      </td>
+      <td>{{ f.nutrients.get("energy_kcal")|number(0) }}</td>
+      <td>{{ f.nutrients.get("protein")|number }}</td>
+      <td>{{ f.nutrients.get("fat")|number }}</td>
+      <td>{{ f.nutrients.get("carbohydrate")|number }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="hint">Per 100 g.</p>
+{% endmacro %}
+{% if q %}
+  {% if foods %}{{ rows(foods) }}{% else %}<p class="muted">No foods match "{{ q }}". Try fewer or shorter words.</p>{% endif %}
+{% elif my_foods %}
+  <h2>My foods</h2>
+  {{ rows(my_foods) }}
+{% else %}
+  <p class="muted">Type in the box to search. Words can be in any order.</p>
+{% endif %}

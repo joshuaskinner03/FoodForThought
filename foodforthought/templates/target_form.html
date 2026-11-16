@@ -1,0 +1,53 @@
+{% extends "client_base.html" %}
+{% from "_macros.html" import date_input %}
+{% block tab %}
+<section class="card">
+  <h2>Work out new targets</h2>
+  <form method="post">
+    <h3>About the client</h3>
+    <div class="grid four">
+      <div class="field">
+        <label for="sex">Sex</label>
+        <select id="sex" name="sex">
+          <option value="">Choose</option>
+          <option value="female"{% if values.sex == "female" %} selected{% endif %}>Female</option>
+          <option value="male"{% if values.sex == "male" %} selected{% endif %}>Male</option>
+        </select>
+      </div>
+      <div class="field"><label for="age">Age, years</label><input id="age" name="age" inputmode="numeric" value="{{ values.age }}" required></div>
+      <div class="field"><label for="weight_kg">Weight, kg</label><input id="weight_kg" name="weight_kg" inputmode="decimal" value="{{ values.weight_kg|plain }}" required></div>
+      <div class="field"><label for="height_cm">Height, cm</label><input id="height_cm" name="height_cm" inputmode="decimal" value="{{ values.height_cm|plain }}" required></div>
+    </div>
+    <p class="hint">{{ source }} Both equations are for adults aged 18 and over. They do not allow for pregnancy or breastfeeding: use the adjustment box for that.</p>
+    <h3>Energy</h3>
+    <div class="grid">
+      <div class="field">
+        <label for="equation">Basal metabolic rate equation</label>
+        <select id="equation" name="equation">{% for value, label in equations %}<option value="{{ value }}"{% if values.equation == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      </div>
+      {{ date_input("Date", "set_on", values.set_on, required=true) }}
+      <div class="field">
+        <label for="activity">Activity factor</label>
+        <select id="activity" name="activity">{% for value, label in activity %}<option value="{{ value }}"{% if values.activity == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label for="custom_pal">Another activity factor, 1.0 to 2.5</label><input id="custom_pal" name="custom_pal" inputmode="decimal" value="{{ values.custom_pal|plain }}"><p class="hint">Only used when "Another value" is chosen.</p></div>
+      <div class="field"><label for="adjustment_kcal">Adjustment, kcal a day</label><input id="adjustment_kcal" name="adjustment_kcal" value="{{ values.adjustment_kcal|plain }}"><p class="hint">For example -500 for a deficit, or 0 to maintain.</p></div>
+    </div>
+    <h3>Macronutrients</h3>
+    <div class="grid">
+      <div class="field"><label for="protein_value">Protein</label><input id="protein_value" name="protein_value" inputmode="decimal" value="{{ values.protein_value|plain }}" required></div>
+      <div class="field">
+        <label for="protein_basis">Protein is given as</label>
+        <select id="protein_basis" name="protein_basis">{% for value, label in protein_bases %}<option value="{{ value }}"{% if values.protein_basis == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label for="fat_percent">Fat, per cent of energy</label><input id="fat_percent" name="fat_percent" inputmode="decimal" value="{{ values.fat_percent|plain }}" required><p class="hint">Carbohydrate takes the rest of the energy.</p></div>
+      <div class="field"><label for="notes">Note</label><input id="notes" name="notes" value="{{ values.notes or '' }}"></div>
+    </div>
+    <p class="hint">The protein and fat figures shown are starting values. Change them to suit the client.</p>
+    <div class="actions">
+      <button type="submit">Work out and save</button>
+      <a href="/clients/{{ client.id }}/targets">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

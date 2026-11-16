@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Foods · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Foods</h1>
+  <span>
+    <a class="button quiet" href="/foods/import">National food database</a>
+    <a class="button" href="/foods/new">New food of my own</a>
+  </span>
+</div>
+{% set cofid = sources.get("cofid") %}
+{% if not cofid or not cofid.imported_at %}
+<p class="warn">The national food database has not been imported yet, so only your own foods can be found. <a href="/foods/import">Import it now</a>. It takes a few minutes, once.</p>
+{% endif %}
+<form class="search" method="get" action="/foods" role="search">
+  <label class="visually-hidden" for="q">Search foods</label>
+  <input id="q" name="q" type="search" value="{{ q }}" placeholder="Search foods, for example: porridge milk" autocomplete="off" autofocus
+         hx-get="/foods" hx-trigger="input changed delay:200ms, search" hx-target="#food-rows">
+  <button class="quiet" type="submit">Search</button>
+</form>
+<section class="card" id="food-rows">
+  {% include "_food_rows.html" %}
+</section>
+{% if cofid and cofid.imported_at %}
+<p class="hint">{{ cofid.foods }} foods from {{ cofid.name }}. {{ cofid.attribution }}</p>
+{% endif %}
+{% endblock %}

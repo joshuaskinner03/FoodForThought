@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ food.name }} · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ food.name }}</h1>
+    <p class="muted sub">
+      {% if food.custom %}My food{% else %}{{ food.source_name }}, code {{ food.code }}{% if food.group_name %} &middot; {{ food.group_name }}{% endif %}{% endif %}
+      {% if food.archived %}&middot; <span class="badge cancelled">Hidden</span>{% endif %}
+    </p>
+  </div>
+  <span>
+    {% if food.custom %}<a class="button quiet" href="/foods/{{ food.id }}/edit">Edit</a>{% endif %}
+    <a class="button quiet" href="/foods">Back to foods</a>
+  </span>
+</div>
+{% if food.description %}<p class="pre">{{ food.description }}</p>{% endif %}
+<section class="card">
+  <div class="card-head">
+    <h2>Nutrients in {{ grams|plain }} g</h2>
+    <form method="get" action="/foods/{{ food.id }}" class="inline-row">
+      <label for="grams">Show for</label>
+      <input id="grams" name="grams" inputmode="decimal" value="{{ grams|plain }}" class="short">
+      <span>g</span>
+      <button class="quiet small" type="submit">Show</button>
+    </form>
+  </div>
+  {% if portions %}
+  <p class="chips">Portions:
+    <a href="/foods/{{ food.id }}">100 g</a>
+    {% for p in portions %}<a href="/foods/{{ food.id }}?grams={{ p.grams|plain }}">{{ p.name }} ({{ p.grams|plain }} g)</a>{% endfor %}
+  </p>
+  {% endif %}
+  <div class="nutrient-groups">
+    {% for group in groups %}
+    <div>
+      <h3>{{ group.name }}</h3>
+      <table class="numbers">
+        <tbody>
+          {% for row in group.rows %}
+          <tr><td>{{ row.label }}</td><td>{{ row.shown }}{% if row.estimated %}*{% endif %}{% if row.shown not in ("trace", "not known") %} {{ row.unit }}{% endif %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="hint">"Not known" means the food contains the nutrient but there is no reliable figure, so totals that include this food will be too low for that nutrient. * marks an estimated value. Carbohydrate is given as monosaccharide equivalents.</p>
+</section>
+<section class="card">
+  <h2>Portions</h2>
+  {% if portions %}
+  <table>
+    <tbody>
+      {% for p in portions %}
+      <tr>
+        <td>{{ p.name }}</td><td>{{ p.grams|plain }} g</td>
+        <td class="row-actions"><form method="post" action="/foods/{{ food.id }}/portions/{{ p.id }}/delete"><button class="link danger-text" type="submit">Remove</button></form></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No portions saved for this food yet. The national database does not include portion sizes.</p>
+  {% endif %}
+  <form method="post" action="/foods/{{ food.id }}/portions">
+    <div class="grid">
+      <div class="field"><label for="name">Portion name</label><input id="name" name="name" placeholder="for example: 1 medium slice" required></div>
+      <div class="field"><label for="portion_grams">Weight in grams</label><input id="portion_grams" name="grams" inputmode="decimal" required></div>
+    </div>
+    <button type="submit">Add portion</button>
+  </form>
+</section>
+{% if food.custom %}
+<form class="aside" method="post" action="/foods/{{ food.id }}/archive">
+  {% if food.archived %}<input type="hidden" name="restore" value="1"><button class="quiet" type="submit">Show this food in searches again</button>
+  {% else %}<button class="quiet" type="submit">Hide this food from searches</button>{% endif %}
+</form>
+{% endif %}
+{% endblock %}

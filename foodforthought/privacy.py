@@ -19,6 +19,7 @@ CLIENT_TABLES = (
     ("appointments", "SELECT * FROM appointment WHERE client_id = ? ORDER BY date, start_time, id"),
     ("notes", "SELECT * FROM note WHERE client_id = ? ORDER BY note_date, id"),
     ("letters", "SELECT * FROM letter WHERE client_id = ? ORDER BY letter_date, id"),
+    ("targets", "SELECT * FROM target WHERE client_id = ? ORDER BY set_on, id"),
     ("activity", "SELECT ts, action, detail FROM audit_log WHERE client_id = ? ORDER BY id"),
 )
 
@@ -140,6 +141,7 @@ def router(web: Web) -> APIRouter:
                 ("completed forms", "form_response"),
                 ("measurements", "measurement"),
                 ("letters", "letter"),
+                ("sets of targets", "target"),
                 ("consent records", "consent"),
                 ("files", "attachment"),
             )

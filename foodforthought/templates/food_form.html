@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit food" if food else "New food" }} · FoodForThought{% endblock %}
+{% block content %}
+<h1>{{ "Edit food" if food else "New food of my own" }}</h1>
+<form method="post" action="{{ '/foods/%d/edit' % food.id if food else '/foods/new' }}">
+  <section class="card">
+    <div class="grid">
+      <div class="field"><label for="name">Name</label><input id="name" name="name" value="{{ values.name or '' }}" required></div>
+      <div class="field"><label for="description">Description, brand or source</label><input id="description" name="description" value="{{ values.description or '' }}"></div>
+    </div>
+    <p class="hint">Enter values per 100 g, for example from the pack. Leave a box empty if the value is not known. Enter 0 only when the food has none.</p>
+  </section>
+  {% for group, nutrients in groups %}
+  <section class="card">
+    <h2>{{ group }}, per 100 g</h2>
+    <div class="grid four">
+      {% for n in nutrients %}
+      <div class="field"><label for="n_{{ n.key }}">{{ n.label|capitalize }}, {{ n.unit }}</label><input id="n_{{ n.key }}" name="n_{{ n.key }}" inputmode="decimal" value="{{ values.nutrients.get(n.key, '')|plain }}"></div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+  <div class="actions">
+    <button type="submit">Save food</button>
+    <a href="{{ '/foods/%d' % food.id if food else '/foods' }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

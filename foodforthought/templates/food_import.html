@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}National food database · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>National food database</h1>
+  <a class="button quiet" href="/foods">Back to foods</a>
+</div>
+{% if source and source.imported_at %}
+{% set report = source.report %}
+<section class="card">
+  <h2>Imported</h2>
+  <dl class="facts">
+    <dt>Foods</dt><dd>{{ report.foods }} read from the file: {{ report.added }} new, {{ report.updated }} updated{% if report.withdrawn %}, {{ report.withdrawn }} no longer in the file and now hidden{% endif %}</dd>
+    <dt>Nutrients</dt><dd>{{ report.nutrients_found }} of {{ report.nutrients_found + report.nutrients_missing|length }} found{% if report.nutrients_missing %}. <span class="warn-text">Not found: {{ report.nutrients_missing|join(", ") }}</span>{% endif %}</dd>
+    <dt>Energy check</dt>
+    <dd>
+      {% if report.energy_checked %}
+      {{ report.energy_checked - report.energy_mismatched }} of {{ report.energy_checked }} foods have an energy value that agrees with their protein, fat, carbohydrate and alcohol.
+      {% if report.energy_mismatched * 20 > report.energy_checked %}<span class="warn-text">That is too few. The columns may have been read wrongly. Do not rely on these figures, and send this report to the developer.</span>{% endif %}
+      {% else %}<span class="warn-text">Could not be done, because energy or a macronutrient column was not found.</span>{% endif %}
+    </dd>
+    <dt>Sheets</dt>
+    <dd>
+      {% for sheet in report.sheets %}
+      {% if sheet.found %}"{{ sheet.found }}": {{ sheet.rows }} rows from row {{ sheet.first_data_row }}, {{ sheet.nutrients|length }} nutrient columns matched by {{ sheet.matched_by }}{% else %}<span class="warn-text">no {{ sheet.wanted }} sheet found</span>{% endif %}{% if not loop.last %}<br>{% endif %}
+      {% endfor %}
+    </dd>
+    <dt>Rows skipped</dt><dd>{{ report.skipped_rows }}{% if report.unreadable_cells %}, and {{ report.unreadable_cells }} cells could not be read and are treated as not known{% endif %}</dd>
+    <dt>File</dt><dd>{{ source.file_name }}, imported {{ source.imported_at|local_stamp }}</dd>
+  </dl>
+  <p class="hint">{{ source.attribution }}</p>
+</section>
+{% endif %}
+<section class="card">
+  <h2>{{ "Import again" if source and source.imported_at else "Import the database" }}</h2>
+  <ol>
+    <li>Open the government page for the dataset: <a href="{{ download_page }}" target="_blank" rel="noopener noreferrer">{{ download_page }}</a></li>
+    <li>Download the Excel file called "McCance and Widdowson's composition of foods integrated dataset" (about 4 MB). The "old foods" file is not needed.</li>
+    <li>Choose that file below.</li>
+  </ol>
+  <p class="hint">The file is read on this device and is not sent anywhere. Importing again updates the foods and keeps your own foods and portions.</p>
+  <form method="post" action="/foods/import" enctype="multipart/form-data">
+    <div class="field">
+      <label for="file">CoFID Excel file (.xlsx)</label>
+      <input id="file" name="file" type="file" accept=".xlsx" required>
+    </div>
+    <button type="submit">Import</button>
+  </form>
+</section>
+{% endblock %}

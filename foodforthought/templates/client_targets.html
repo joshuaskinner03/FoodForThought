@@ -1,0 +1,41 @@
+{% extends "client_base.html" %}
+{% block tab %}
+<div class="card-head">
+  <h2>Energy and macronutrient targets</h2>
+  <a class="button small" href="/clients/{{ client.id }}/targets/new">Work out new targets</a>
+</div>
+{% macro detail(t) %}
+<p class="muted">{{ t.equation_label }}, {{ t.sex }}, age {{ t.age }}, {{ t.weight_kg|plain }} kg, {{ t.height_cm|plain }} cm</p>
+<dl class="facts">
+  <dt>Basal metabolic rate</dt><dd>{{ t.bmr_kcal|number(0) }} kcal a day</dd>
+  <dt>Activity factor</dt><dd>{{ t.pal|plain }}, giving {{ t.tee_kcal|number(0) }} kcal a day</dd>
+  <dt>Adjustment</dt><dd>{{ "%+.0f"|format(t.adjustment_kcal) }} kcal a day</dd>
+  <dt>Energy target</dt><dd><strong>{{ t.energy_kcal|number(0) }} kcal a day</strong></dd>
+  <dt>Protein</dt><dd><strong>{{ t.protein_g|number(0) }} g</strong> ({{ t.protein_percent|number(0) }}% of energy{% if t.protein_basis == "per_kg" %}, {{ t.protein_value|plain }} g per kg{% endif %})</dd>
+  <dt>Fat</dt><dd><strong>{{ t.fat_g|number(0) }} g</strong> ({{ t.fat_percent|number(0) }}% of energy)</dd>
+  <dt>Carbohydrate</dt><dd><strong>{{ t.carbohydrate_g|number(0) }} g</strong> ({{ t.carbohydrate_percent|number(0) }}% of energy)</dd>
+</dl>
+{% if t.notes %}<p class="pre">{{ t.notes }}</p>{% endif %}
+{% endmacro %}
+{% if current %}
+<section class="card">
+  <div class="card-head">
+    <h3>Current, set {{ current.set_on|nice_date }}</h3>
+    <form method="post" action="/clients/{{ client.id }}/targets/{{ current.id }}/delete"><button class="link danger-text" type="submit" data-confirm="Delete these targets?">Delete</button></form>
+  </div>
+  {{ detail(current) }}
+  <p class="hint">These are estimates from prediction equations, not measurements. Carbohydrate is in monosaccharide equivalents at 3.75 kcal per gram, to match the national food tables; protein is 4 and fat 9 kcal per gram.</p>
+</section>
+{% for t in earlier %}
+<section class="card faded-card">
+  <div class="card-head">
+    <h3>Earlier, set {{ t.set_on|nice_date }}</h3>
+    <form method="post" action="/clients/{{ client.id }}/targets/{{ t.id }}/delete"><button class="link danger-text" type="submit" data-confirm="Delete these targets?">Delete</button></form>
+  </div>
+  {{ detail(t) }}
+</section>
+{% endfor %}
+{% else %}
+<section class="card"><p class="muted">No targets worked out yet.</p></section>
+{% endif %}
+{% endblock %}
