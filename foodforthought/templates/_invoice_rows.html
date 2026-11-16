@@ -1,0 +1,19 @@
+{% if invoices %}
+<table class="numbers from-4">
+  <thead><tr><th>Number</th><th>Date</th><th>For</th><th>Total</th><th>Balance</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for i in invoices %}
+    <tr>
+      <td><a href="/invoices/{{ i.id }}">{{ i.number or "Draft" }}</a></td>
+      <td>{{ i.issue_date|nice_date }}</td>
+      <td>{{ i.bill_to_name }}</td>
+      <td>{{ i.totals.total|money }}</td>
+      <td>{% if i.status == "issued" %}{{ i.totals.balance|money }}{% endif %}</td>
+      <td><span class="badge {{ i.state }}">{{ i.state_label }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">Nothing to show here.</p>
+{% endif %}

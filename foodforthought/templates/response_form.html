@@ -1,10 +1,10 @@
 {% extends "client_base.html" %}
-{% from "_macros.html" import form_fields %}
+{% from "_macros.html" import form_fields, date_input %}
 {% block tab %}
 <section class="card">
   <h2>{{ form_name }}</h2>
   <form method="post">
-    <div class="field"><label for="completed_on">Date completed</label><input id="completed_on" name="completed_on" type="date" value="{{ completed_on }}" required></div>
+    {{ date_input("Date completed", "completed_on", completed_on, required=true) }}
     {{ form_fields(fields, answers) }}
     <div class="actions">
       <button type="submit">Save form</button>

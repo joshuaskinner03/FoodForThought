@@ -38,7 +38,7 @@ def test_new_note_from_template_and_appointment(unlocked, jane):
     unlocked.post("/diary/new", data={"client_id": str(jane), "title": "Review", "date": "2026-11-10", "start_time": "09:00", "duration_minutes": "30"})
     appointment_id = db(unlocked).one("SELECT id FROM appointment")["id"]
     page = unlocked.get(f"/clients/{jane}/notes/new?template={template_id}&appointment={appointment_id}").text
-    assert "Progress since last session:" in page and 'value="2026-11-10"' in page
+    assert "Progress since last session:" in page and 'value="10/11/2026"' in page
     unlocked.post(
         f"/clients/{jane}/notes/new",
         data={"note_date": "2026-11-10", "title": "Review", "body": "Going well.\r\nMore fibre.", "appointment_id": str(appointment_id)},

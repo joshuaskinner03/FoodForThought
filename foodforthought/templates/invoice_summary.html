@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Income summary · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Income summary</h1>
+    <p class="muted sub">Tax year 6 April {{ start_year }} to 5 April {{ start_year + 1 }}</p>
+  </div>
+  <a class="button quiet" href="/invoices">Back to invoices</a>
+</div>
+<p class="chips">Tax year starting:
+  {% for y in years %}<a href="/invoices/summary?year={{ y }}"{% if y == start_year %} class="here" aria-current="page"{% endif %}>{{ y }}</a>{% endfor %}
+</p>
+<section class="card">
+  <table class="numbers">
+    <thead><tr><th>Period</th><th>Invoiced</th>{% if vat_registered %}<th>Of which VAT</th>{% endif %}<th>Received</th></tr></thead>
+    <tbody>
+      {% for row in summary.rows %}
+      <tr><td>{{ row.label }}</td><td>{{ row.invoiced|money }}</td>{% if vat_registered %}<td>{{ row.vat|money }}</td>{% endif %}<td>{{ row.received|money }}</td></tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><th>Tax year total</th><th>{{ summary.invoiced|money }}</th>{% if vat_registered %}<th>{{ summary.vat|money }}</th>{% endif %}<th>{{ summary.received|money }}</th></tr>
+    </tfoot>
+  </table>
+  <p class="hint">Invoiced counts issued invoices by invoice date. Received counts payments by the date paid. Drafts and voided invoices are left out. Outstanding across all years: {{ summary.outstanding|money }}.</p>
+</section>
+{% endblock %}

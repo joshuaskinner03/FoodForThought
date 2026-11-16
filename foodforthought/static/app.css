@@ -93,6 +93,20 @@ textarea {
 
 textarea { resize: vertical; line-height: 1.45; }
 
+.date-field { position: relative; display: flex; gap: 0.4rem; }
+.date-field button { margin: 0; padding: 0.4rem 0.7rem; font-size: 0.9rem; font-weight: 400; white-space: nowrap; }
+.date-field .date-picker {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 1px !important;
+  height: 1px;
+  padding: 0 !important;
+  border: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
 input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
   outline: 3px solid #8fc4a8;
   outline-offset: 2px;
@@ -305,4 +319,44 @@ td.row-actions > form { margin-left: 0.9rem; }
   .bar form { margin-left: auto; }
   .facts { grid-template-columns: 1fr; }
   .facts dt { margin-top: 0.4rem; }
+}
+
+.grid.four { grid-template-columns: repeat(4, 1fr); }
+.chips a.here { background: var(--accent); border-color: var(--accent); color: #fff; }
+table.numbers th:not(:first-child), table.numbers td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+table.numbers.from-4 th:nth-child(-n+3), table.numbers.from-4 td:nth-child(-n+3) { text-align: left; }
+table.numbers .note-row td { text-align: left; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+tfoot th { border-top: 2px solid var(--ink); border-bottom: 0; color: var(--ink); }
+.badge.paid { background: #e6f2eb; border-color: #a9cdb9; }
+.badge.draft, .badge.void { background: #eceae2; border-color: var(--line); }
+.badge.unpaid, .badge.part { background: var(--warn-bg); border-color: var(--warn-line); }
+.badge.overdue { background: var(--error-bg); border-color: var(--error-line); }
+h1 .badge { font-family: system-ui, sans-serif; font-weight: 400; vertical-align: middle; }
+
+.totals { display: grid; grid-template-columns: 1fr max-content; gap: 0.25rem 2rem; max-width: 20rem; margin: 1rem 0 0 auto; }
+.totals dt { color: var(--muted); }
+.totals dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.line-row { display: grid; grid-template-columns: minmax(0, 1fr) 6rem 8rem max-content; gap: 0 0.8rem; align-items: end; margin-bottom: 0.4rem; }
+.line-row button { margin: 0 0 0.7rem; }
+.logo-preview { max-width: 16rem; max-height: 8rem; border: 1px solid var(--line); border-radius: 6px; }
+.logo-card { margin-top: 1.2rem; }
+
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.2rem; }
+.chart { margin: 0 0 1.2rem; padding: 0.9rem 1rem 0.6rem; }
+.chart figcaption { font-weight: 600; margin-bottom: 0.3rem; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .grid-line { stroke: #e4e1d8; stroke-width: 1; }
+.chart .tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart .series { fill: none; stroke: #2a78d6; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .dot { fill: #2a78d6; stroke: var(--card); stroke-width: 2; }
+.chart .last-value { fill: var(--ink); font-size: 12px; font-weight: 600; }
+.chart .hit { fill: transparent; }
+.chart .hit:hover { fill: rgba(42, 120, 214, 0.18); }
+
+@media (max-width: 900px) {
+  .charts, .grid.four { grid-template-columns: 1fr 1fr; }
+  .line-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .charts, .grid.four { grid-template-columns: 1fr; }
 }

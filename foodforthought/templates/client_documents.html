@@ -1,4 +1,5 @@
 {% extends "client_base.html" %}
+{% from "_macros.html" import date_input %}
 {% block tab %}
 <section class="card">
   <h2>Consent</h2>
@@ -34,10 +35,7 @@
         <input id="kind" name="kind" list="consent-kinds" required>
         <datalist id="consent-kinds">{% for kind in consent_kinds %}<option value="{{ kind }}">{% endfor %}</datalist>
       </div>
-      <div class="field">
-        <label for="given_on">Date given</label>
-        <input id="given_on" name="given_on" type="date" value="{{ today }}" required>
-      </div>
+      {{ date_input("Date given", "given_on", today, required=true) }}
       <div class="field">
         <label for="method">How it was given</label>
         <input id="method" name="method" list="consent-methods">

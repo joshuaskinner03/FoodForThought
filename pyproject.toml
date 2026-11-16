@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "foodforthought"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local-only practice management for a private nutritionist"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -18,12 +18,14 @@ dependencies = [
     "argon2-cffi>=23.1",
     "cryptography>=42",
     "platformdirs>=4",
+    "reportlab>=4",
+    "pillow>=10",
     "sqlcipher3-binary>=0.5.4; sys_platform == 'linux' and platform_machine == 'x86_64'",
     "sqlcipher3-wheels>=0.5.4; sys_platform != 'linux' or platform_machine != 'x86_64'",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "httpx2>=2"]
+dev = ["pytest>=8", "httpx2>=2", "pypdf>=4"]
 
 [project.scripts]
 foodforthought = "foodforthought.__main__:main"
@@ -32,7 +34,7 @@ foodforthought = "foodforthought.__main__:main"
 include = ["foodforthought*"]
 
 [tool.setuptools.package-data]
-foodforthought = ["migrations/*.sql", "templates/*.html", "static/*", "static/vendor/*"]
+foodforthought = ["migrations/*.sql", "templates/*.html", "static/*", "static/vendor/*", "fonts/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

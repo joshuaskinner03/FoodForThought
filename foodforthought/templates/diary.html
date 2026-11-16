@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import date_input %}
 {% block title %}Diary · FoodForThought{% endblock %}
 {% block main_class %}wide{% endblock %}
 {% block content %}
@@ -39,8 +40,8 @@
   <p class="hint">Makes an .ics file you can import into Google Calendar or another calendar. The file is not encrypted, and anything you import into an online calendar leaves this device. Initials are used unless you choose full names. Cancelled appointments are left out.</p>
   <form method="get" action="/diary/export.ics">
     <div class="grid three">
-      <div class="field"><label for="start">From</label><input id="start" name="start" type="date" value="{{ today }}" required></div>
-      <div class="field"><label for="end">To</label><input id="end" name="end" type="date" value="{{ export_end }}" required></div>
+      {{ date_input("From", "start", today, required=true) }}
+      {{ date_input("To", "end", export_end, required=true) }}
       <div class="field">
         <label for="names">Client names</label>
         <select id="names" name="names"><option value="initials">Initials only</option><option value="full">Full names</option></select>

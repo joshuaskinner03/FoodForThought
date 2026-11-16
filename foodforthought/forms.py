@@ -74,8 +74,8 @@ def read_answers(fields: list[dict], form: FormData) -> tuple[dict, list[str]]:
                 value = ""
             if field["type"] == "yesno" and value not in ("Yes", "No"):
                 value = ""
-            if field["type"] == "date" and value and fmt.parse_date(value) is None:
-                value = ""
+            if field["type"] == "date":
+                value = fmt.iso(value) if fmt.parse_date(value) else ""
         answers[field["id"]] = value
         if field.get("required") and not value:
             missing.append(field["label"])

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Invoices · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Invoices</h1>
+    <p class="muted sub">Outstanding: <strong>{{ outstanding|money }}</strong> &middot; <a href="/invoices/summary">Income summary</a></p>
+  </div>
+  <form method="post" action="/invoices/new" class="inline-row">
+    <label class="visually-hidden" for="client_id">Client</label>
+    <select id="client_id" name="client_id">
+      <option value="">No client on record</option>
+      {% for c in clients %}<option value="{{ c.id }}">{{ c.last_name }}, {{ c.first_name }}</option>{% endfor %}
+    </select>
+    <button type="submit">New invoice</button>
+  </form>
+</div>
+<p class="chips">Show:
+  {% for value, label in filters %}<a href="/invoices?show={{ value }}"{% if show == value %} class="here" aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
+</p>
+<section class="card">
+  {% include "_invoice_rows.html" %}
+</section>
+{% endblock %}

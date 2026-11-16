@@ -29,6 +29,32 @@
 </section>
 <section class="card">
   <div class="card-head">
+    <h2>Letter templates</h2>
+    <a class="button small" href="/library/letter-templates/new">New letter template</a>
+  </div>
+  {% if letter_templates %}
+  <table>
+    <tbody>
+      {% for t in letter_templates %}
+      <tr{% if t.archived %} class="faded"{% endif %}>
+        <td><a href="/library/letter-templates/{{ t.id }}">{{ t.name }}</a>{% if t.archived %} <span class="badge cancelled">Hidden</span>{% endif %}</td>
+        <td class="row-actions">
+          <form method="post" action="/library/letter-templates/{{ t.id }}/archive">
+            {% if t.archived %}<input type="hidden" name="restore" value="1"><button class="link" type="submit">Show again</button>
+            {% else %}<button class="link" type="submit">Hide</button>{% endif %}
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No letter templates yet.</p>
+  {% endif %}
+  <p class="hint">To write a letter, open a client's record and choose Letters.</p>
+</section>
+<section class="card">
+  <div class="card-head">
     <h2>Forms</h2>
     <a class="button small" href="/library/forms/new">New form</a>
   </div>

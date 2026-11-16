@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import input, area %}
+{% from "_macros.html" import input, area, date_input %}
 {% block title %}{{ "Edit client" if client else "New client" }} · FoodForThought{% endblock %}
 {% block content %}
 <h1>{{ "Edit client" if client else "New client" }}</h1>
@@ -10,7 +10,7 @@
       {{ input("First name", "first_name", values.first_name, required=true) }}
       {{ input("Last name", "last_name", values.last_name, required=true) }}
       {{ input("Preferred name", "preferred_name", values.preferred_name) }}
-      {{ input("Date of birth", "date_of_birth", values.date_of_birth, type="date") }}
+      {{ date_input("Date of birth", "date_of_birth", values.date_of_birth) }}
       <div class="field">
         <label for="sex">Sex</label>
         <select id="sex" name="sex">

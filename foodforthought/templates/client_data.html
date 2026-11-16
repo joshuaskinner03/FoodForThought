@@ -1,0 +1,28 @@
+{% extends "client_base.html" %}
+{% block tab %}
+<section class="card">
+  <h2>Export this record</h2>
+  <p>Makes one zip file with everything held about {{ name }}: a page to read (<code>record.html</code>), the same information as data (<code>record.json</code>), and their files.</p>
+  <p class="warn">The zip is not encrypted. Anyone who gets the file can read it. Send it by a route you trust and delete it from Downloads afterwards.</p>
+  <form method="post" action="/clients/{{ client.id }}/export"><button type="submit">Download record as a zip</button></form>
+</section>
+<section class="card">
+  <h2>Erase this record</h2>
+  <p>This removes {{ name }} and everything attached to them, for good:</p>
+  <ul>
+    <li>their details, history, allergies, medications and goals</li>
+    {% for label, count in counts.items() %}<li>{{ label }}: {{ count }}</li>{% endfor %}
+    <li>any draft invoices</li>
+  </ul>
+  <p><strong>What is kept:</strong> {{ invoices_kept }} issued or voided invoice{{ "" if invoices_kept == 1 else "s" }}, with the name and address printed on them and any payments, because they are your financial records. They are no longer linked to a client. The activity log keeps a line saying that a record was erased, without the name.</p>
+  <p class="warn">Backups made before today still contain this record. Make a new backup afterwards and destroy the old ones. If a safety copy from a restore exists, delete it in Settings. Erasing cannot be undone.</p>
+  <form method="post" action="/clients/{{ client.id }}/erase">
+    <div class="field">
+      <label for="confirm">To confirm, type the client's full name: {{ name }}</label>
+      <input id="confirm" name="confirm" autocomplete="off" required>
+    </div>
+    <button class="danger" type="submit" data-confirm="Erase this record for good?">Erase this record</button>
+  </form>
+</section>
+<p class="aside"><a href="/clients/{{ client.id }}">Back to the record</a></p>
+{% endblock %}

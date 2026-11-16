@@ -9,6 +9,22 @@
     if (event.target.closest("[data-print]")) window.print();
   });
 
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-pick]");
+    if (!button) return;
+    const picker = button.parentElement.querySelector(".date-picker");
+    const typed = document.getElementById(button.dataset.pick).value.trim().match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
+    picker.value = typed ? `${typed[3]}-${typed[2].padStart(2, "0")}-${typed[1].padStart(2, "0")}` : "";
+    try { picker.showPicker(); } catch (err) { /* typing the date still works */ }
+  });
+
+  document.addEventListener("change", (event) => {
+    if (event.target.classList.contains("date-picker") && event.target.value) {
+      const [year, month, day] = event.target.value.split("-");
+      event.target.parentElement.querySelector("input[type=text]").value = `${day}/${month}/${year}`;
+    }
+  });
+
   document.addEventListener("change", (event) => {
     const target = event.target.dataset.optionsFor;
     if (target) document.getElementById(target).hidden = !["choice", "multi"].includes(event.target.value);

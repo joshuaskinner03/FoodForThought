@@ -27,6 +27,11 @@ MESSAGES = {
     "uploaded": "File added.",
     "clash": "Saved. Note: this overlaps another appointment that day.",
     "series": "Saved. The repeat appointments were added to the diary.",
+    "issued": "Invoice issued. It can no longer be edited.",
+    "voided": "Invoice voided.",
+    "paid": "Payment recorded.",
+    "erased": "The client's record has been erased.",
+    "logo-saved": "Logo saved.",
     "series-clash": "Saved the repeat appointments. Note: at least one overlaps another appointment.",
 }
 
@@ -34,6 +39,11 @@ ERRORS = {
     "no-file": "Choose a file first.",
     "too-large": "That file is too large. The limit is 25 MB.",
     "consent": "Say what the consent is for.",
+    "logo": "That file is not a PNG or JPEG image, or it is larger than 5 MB.",
+    "practice": "Add your practice details in Settings before issuing an invoice.",
+    "has-payments": "Delete the payments on this invoice before voiding it.",
+    "payment": "Give a valid date and an amount above zero.",
+    "erase-name": "The name typed did not match, so nothing was erased.",
 }
 
 
@@ -58,6 +68,10 @@ class Web:
         self.templates = Jinja2Templates(directory=PKG / "templates")
         self.templates.env.filters.update(
             nice_date=fmt.nice_date,
+            uk_date=fmt.uk_date,
+            money=fmt.money,
+            number=fmt.number,
+            plain=fmt.plain,
             long_date=fmt.long_date,
             local_stamp=fmt.local_stamp,
             file_size=fmt.file_size,

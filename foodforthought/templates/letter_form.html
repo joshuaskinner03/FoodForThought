@@ -1,0 +1,27 @@
+{% extends "client_base.html" %}
+{% from "_macros.html" import date_input %}
+{% block tab %}
+{% if gp_consent_missing %}
+<p class="warn">No consent for sharing information with the GP is recorded for this client. Check before sending.</p>
+{% endif %}
+<section class="card">
+  <h2>{{ "Edit letter" if letter else "New letter" }}</h2>
+  <form method="post">
+    <div class="grid">
+      {{ date_input("Date", "letter_date", values.letter_date, required=true) }}
+      <div class="field"><label for="recipient_name">To</label><input id="recipient_name" name="recipient_name" value="{{ values.recipient_name }}"></div>
+      <div class="field wide"><label for="recipient_address">Address</label><textarea id="recipient_address" name="recipient_address" rows="3">{{ values.recipient_address }}</textarea></div>
+      <div class="field wide"><label for="subject">Subject line</label><input id="subject" name="subject" value="{{ values.subject }}"></div>
+      <div class="field wide">
+        <label for="body">Letter</label>
+        <textarea id="body" name="body" rows="18" required>{{ values.body }}</textarea>
+        <p class="hint">Leave an empty line between paragraphs. Your letterhead is added to the PDF from your practice details.</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit">Save letter</button>
+      <a href="/clients/{{ client.id }}/letters">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

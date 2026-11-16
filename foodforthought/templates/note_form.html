@@ -1,4 +1,5 @@
 {% extends "client_base.html" %}
+{% from "_macros.html" import date_input %}
 {% block tab %}
 <section class="card">
   <h2>{{ "Edit note" if note else "New note" }}</h2>
@@ -13,10 +14,7 @@
   <form method="post" action="{{ '/clients/%d/notes/%d/edit' % (client.id, note.id) if note else '/clients/%d/notes/new' % client.id }}">
     <input type="hidden" name="appointment_id" value="{{ values.appointment_id }}">
     <div class="grid">
-      <div class="field">
-        <label for="note_date">Date</label>
-        <input id="note_date" name="note_date" type="date" value="{{ values.note_date }}" required>
-      </div>
+      {{ date_input("Date", "note_date", values.note_date, required=true) }}
       <div class="field">
         <label for="title">Title</label>
         <input id="title" name="title" value="{{ values.title }}">

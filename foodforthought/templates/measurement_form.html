@@ -1,0 +1,34 @@
+{% extends "client_base.html" %}
+{% from "_macros.html" import date_input %}
+{% block tab %}
+<section class="card">
+  <h2>{{ "Edit measurement" if existing else "New measurement" }}</h2>
+  <form method="post">
+    <div class="grid">
+      {{ date_input("Date", "measured_on", values.measured_on, required=true) }}
+      <div class="field"><label for="weight_kg">Weight, kg</label><input id="weight_kg" name="weight_kg" inputmode="decimal" value="{{ values.weight_kg|plain }}"></div>
+      <div class="field"><label for="height_cm">Height, cm</label><input id="height_cm" name="height_cm" inputmode="decimal" value="{{ values.height_cm|plain }}"><p class="hint">Only needed the first time, or if it has changed.</p></div>
+      <div class="field"><label for="waist_cm">Waist, cm</label><input id="waist_cm" name="waist_cm" inputmode="decimal" value="{{ values.waist_cm|plain }}"></div>
+    </div>
+    <h3>Skinfolds, mm (optional)</h3>
+    <div class="grid four">
+      {% for site, label in sites %}
+      <div class="field"><label for="sf_{{ site }}">{{ label }}</label><input id="sf_{{ site }}" name="sf_{{ site }}" inputmode="decimal" value="{{ values.skinfolds.get(site, '')|plain }}"></div>
+      {% endfor %}
+    </div>
+    <div class="field">
+      <label for="body_fat_method">Estimate body fat with</label>
+      <select id="body_fat_method" name="body_fat_method">
+        <option value="">Do not estimate</option>
+        {% for key, label, needs in methods %}<option value="{{ key }}"{% if values.body_fat_method == key %} selected{% endif %}>{{ label }}{% if needs %}: {{ needs }}{% endif %}</option>{% endfor %}
+      </select>
+      <p class="hint">Body density is converted to body fat with the Siri equation. The equations were developed on adults (Durnin and Womersley ages 16 to 72, Jackson and Pollock ages 18 to 61) and are less reliable outside those ages.{% if not client.sex or not client.date_of_birth %} <strong>This client needs a sex and date of birth recorded before body fat can be estimated.</strong>{% endif %}</p>
+    </div>
+    <div class="field wide"><label for="notes">Note</label><input id="notes" name="notes" value="{{ values.notes or '' }}"></div>
+    <div class="actions">
+      <button type="submit">Save measurement</button>
+      <a href="/clients/{{ client.id }}/measurements">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

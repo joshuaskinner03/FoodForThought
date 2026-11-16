@@ -1,0 +1,61 @@
+{% extends "client_base.html" %}
+{% block tab %}
+<div class="card-head">
+  <h2>Measurements</h2>
+  <a class="button small" href="/clients/{{ client.id }}/measurements/new">New measurement</a>
+</div>
+{% if charts %}
+<div class="charts">
+  {% for c in charts %}
+  <figure class="card chart">
+    <figcaption>{{ c.title }}{% if c.unit %} <span class="muted">({{ c.unit }})</span>{% endif %}</figcaption>
+    <svg viewBox="0 0 {{ c.width }} {{ c.height }}" role="img" aria-label="{{ c.summary }}">
+      {% for t in c.ticks %}
+      <line class="grid-line" x1="{{ c.left }}" x2="{{ c.plot_right }}" y1="{{ t.y }}" y2="{{ t.y }}"/>
+      <text class="tick" x="{{ c.left - 8 }}" y="{{ t.y + 4 }}" text-anchor="end">{{ t.label }}</text>
+      {% endfor %}
+      <text class="tick" x="{{ c.left }}" y="{{ c.height - 8 }}">{{ c.start }}</text>
+      <text class="tick" x="{{ c.plot_right }}" y="{{ c.height - 8 }}" text-anchor="end">{{ c.end }}</text>
+      <path class="series" d="{{ c.path }}"/>
+      {% for m in c.marks %}
+      <circle class="dot" cx="{{ m.x }}" cy="{{ m.y }}" r="4"/>
+      {% endfor %}
+      <text class="last-value" x="{{ c.marks[-1].x + 10 }}" y="{{ c.marks[-1].y + 4 }}">{{ c.last_label }}</text>
+      {% for m in c.marks %}
+      <circle class="hit" cx="{{ m.x }}" cy="{{ m.y }}" r="12"><title>{{ m.tip }}</title></circle>
+      {% endfor %}
+    </svg>
+  </figure>
+  {% endfor %}
+</div>
+{% elif measurements %}
+<p class="hint">Charts appear once there are two or more readings of the same kind.</p>
+{% endif %}
+<section class="card">
+  {% if measurements %}
+  <table class="numbers">
+    <thead><tr><th>Date</th><th>Weight, kg</th><th>Height, cm</th><th>BMI</th><th>Waist, cm</th><th>Body fat, %</th><th></th></tr></thead>
+    <tbody>
+      {% for m in measurements %}
+      <tr>
+        <td>{{ m.measured_on|nice_date }}</td>
+        <td>{{ m.weight_kg|number }}</td>
+        <td>{{ m.height_cm|number }}</td>
+        <td>{{ m.bmi|number }}</td>
+        <td>{{ m.waist_cm|number }}</td>
+        <td>{% if m.body_fat_percent is not none %}<span title="{{ method_labels.get(m.body_fat_method, '') }}">{{ m.body_fat_percent|number }}</span>{% endif %}</td>
+        <td class="row-actions">
+          <a href="/clients/{{ client.id }}/measurements/{{ m.id }}/edit">Edit</a>
+          <form method="post" action="/clients/{{ client.id }}/measurements/{{ m.id }}/delete"><button class="link danger-text" type="submit" data-confirm="Delete this measurement?">Delete</button></form>
+        </td>
+      </tr>
+      {% if m.notes %}<tr class="note-row"><td></td><td colspan="6" class="muted">{{ m.notes }}</td></tr>{% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="hint">BMI uses the most recent height recorded on or before each date. Body fat is an estimate from skinfolds, not a measurement.</p>
+  {% else %}
+  <p class="muted">No measurements yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

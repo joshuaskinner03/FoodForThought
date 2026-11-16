@@ -36,6 +36,7 @@ def router(web: Web) -> APIRouter:
             "library.html",
             note_templates=templates(include_archived=True),
             forms=web.db.query("SELECT * FROM form_definition ORDER BY archived, name COLLATE NOCASE"),
+            letter_templates=web.db.query("SELECT * FROM letter_template ORDER BY archived, name COLLATE NOCASE"),
         )
 
     @r.get("/library/note-templates/new")
@@ -122,7 +123,7 @@ def router(web: Web) -> APIRouter:
 
     def read_note(form: FormData) -> tuple[dict, str | None]:
         values = {
-            "note_date": text(form, "note_date"),
+            "note_date": fmt.iso(text(form, "note_date")),
             "title": text(form, "title", 200),
             "body": text(form, "body", 200000),
             "appointment_id": text(form, "appointment_id"),

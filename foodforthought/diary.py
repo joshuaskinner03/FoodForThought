@@ -142,7 +142,7 @@ def read_form(form: FormData, db: Database) -> tuple[dict, list[str]]:
     values = {
         "client_id": None,
         "title": text(form, "title", 200),
-        "date": text(form, "date"),
+        "date": fmt.iso(text(form, "date")),
         "start_time": text(form, "start_time"),
         "duration_minutes": 60,
         "location": text(form, "location", 200),

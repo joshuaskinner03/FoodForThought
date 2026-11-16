@@ -1,3 +1,15 @@
+{% macro date_input(label, name, value="", required=false, hint="") %}
+<div class="field">
+  <label for="{{ name }}">{{ label }}</label>
+  <div class="date-field">
+    <input id="{{ name }}" name="{{ name }}" type="text" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy" maxlength="10" value="{{ value|uk_date }}"{% if required %} required{% endif %}>
+    <input class="date-picker" type="date" tabindex="-1" aria-hidden="true">
+    <button class="quiet" type="button" data-pick="{{ name }}" aria-label="Choose {{ label|lower }} from a calendar">Calendar</button>
+  </div>
+  {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}
+
 {% macro input(label, name, value="", type="text", required=false, hint="") %}
 <div class="field">
   <label for="{{ name }}">{{ label }}</label>
@@ -51,6 +63,12 @@
     <div class="blank-line{% if f.type == 'textarea' %} tall{% endif %}"></div>
     {% elif f.type == "textarea" %}
     <textarea id="a_{{ f.id }}" name="a_{{ f.id }}" rows="4">{{ value }}</textarea>
+    {% elif f.type == "date" %}
+    <div class="date-field">
+      <input id="a_{{ f.id }}" name="a_{{ f.id }}" type="text" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy" maxlength="10" value="{{ value|uk_date }}">
+      <input class="date-picker" type="date" tabindex="-1" aria-hidden="true">
+      <button class="quiet" type="button" data-pick="a_{{ f.id }}" aria-label="Choose a date from a calendar">Calendar</button>
+    </div>
     {% else %}
     <input id="a_{{ f.id }}" name="a_{{ f.id }}" type="{{ f.type }}"{% if f.type == 'number' %} step="any"{% endif %} value="{{ value }}">
     {% endif %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Letter template · FoodForThought{% endblock %}
+{% block content %}
+<h1>{{ "Edit letter template" if template else "New letter template" }}</h1>
+<form method="post" action="{{ '/library/letter-templates/%d' % template.id if template else '/library/letter-templates/new' }}">
+  <section class="card">
+    <div class="grid">
+      <div class="field"><label for="name">Name</label><input id="name" name="name" value="{{ values.name or '' }}" required></div>
+      <div class="field">
+        <label for="recipient">Addressed to</label>
+        <select id="recipient" name="recipient">{% for value, label in recipients %}<option value="{{ value }}"{% if values.recipient == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      </div>
+      <div class="field wide"><label for="subject">Subject line</label><input id="subject" name="subject" value="{{ values.subject or '' }}"></div>
+      <div class="field wide">
+        <label for="body">Letter text</label>
+        <textarea id="body" name="body" rows="16">{{ values.body or '' }}</textarea>
+        <p class="hint">These are filled in when a letter is started from this template: {{ placeholders|join(" ") }}. Anything else in square brackets is left for you to replace.</p>
+      </div>
+    </div>
+    <div class="actions"><button type="submit">Save template</button><a href="/library">Cancel</a></div>
+  </section>
+</form>
+{% endblock %}

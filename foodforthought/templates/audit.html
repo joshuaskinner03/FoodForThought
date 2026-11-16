@@ -10,7 +10,7 @@
       <tr>
         <td>{{ entry.ts|local_stamp }}</td>
         <td>{{ entry.action }}</td>
-        <td>{% if entry.client_id and entry.first_name %}<a href="/clients/{{ entry.client_id }}">{{ entry.first_name }} {{ entry.last_name }}</a>{% elif entry.client_id %}Client {{ entry.client_id }}{% endif %}</td>
+        <td>{% if entry.client_id and entry.first_name %}<a href="/clients/{{ entry.client_id }}">{{ entry.first_name }} {{ entry.last_name }}</a>{% elif entry.client_id %}Client {{ entry.client_id }} (erased){% endif %}</td>
         <td>{{ entry.detail }}</td>
       </tr>
       {% endfor %}

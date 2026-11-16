@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import date_input %}
 {% block title %}{{ "Appointment" if appointment else "New appointment" }} · FoodForThought{% endblock %}
 {% block content %}
 <h1>{{ "Appointment" if appointment else "New appointment" }}</h1>
@@ -19,7 +20,7 @@
         <input id="title" name="title" list="titles" value="{{ values.title or '' }}">
         <datalist id="titles">{% for t in titles %}<option value="{{ t }}">{% endfor %}</datalist>
       </div>
-      <div class="field"><label for="date">Date</label><input id="date" name="date" type="date" value="{{ values.date }}" required></div>
+      {{ date_input("Date", "date", values.date, required=true) }}
       <div class="field"><label for="start_time">Start time</label><input id="start_time" name="start_time" type="time" value="{{ values.start_time }}" required></div>
       <div class="field"><label for="duration_minutes">Length in minutes</label><input id="duration_minutes" name="duration_minutes" type="number" min="5" max="720" step="5" value="{{ values.duration_minutes }}" required></div>
       <div class="field"><label for="location">Location</label><input id="location" name="location" value="{{ values.location or '' }}"></div>

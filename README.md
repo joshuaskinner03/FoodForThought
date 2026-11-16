@@ -3,12 +3,12 @@
 Free, open-source, local-only practice management for a private nutritionist.
 One user, one device, no cloud.
 
-**Status: Phase 1a.** Working now: client records, appointment diary, session
-notes with templates, custom forms, consent records, encrypted file
-attachments, activity log, password and auto-lock, encrypted backup and
-restore. Still to come: measurements, invoices, letters and per-client GDPR
-export and deletion (Phase 1b), nutrition analysis (Phase 2), optional local AI
-drafting (Phase 3).
+**Status: Phase 1 complete.** Working now: client records, appointment diary,
+session notes, custom forms, consent records, encrypted file attachments,
+measurements with progress charts, invoices and receipts as PDF, an income
+summary, letters as PDF, per-client export and erasure, activity log, password
+and auto-lock, encrypted backup and restore. Still to come: nutrition analysis
+(Phase 2) and optional local AI drafting (Phase 3).
 
 ## Run it
 
@@ -42,11 +42,11 @@ The app was first called Larder. A data folder left by that version is moved
 to the new name on first start, and backups it made (`.larderbackup`) still
 restore.
 
-## What is in Phase 1a
+## What it does
 
 - **Clients:** contact details, GP, medical history, allergies, medications and
   goals. Allergies show at the top of every page of the record. Clients are
-  archived, not deleted.
+  archived, or erased for good from *Export or erase this record*.
 - **Consent and files:** dated consent records that can be withdrawn. Files of
   up to 25 MB are stored encrypted. Images open in the browser, everything else
   downloads.
@@ -58,9 +58,50 @@ restore.
 - **Forms:** build intake and assessment forms from eight answer types, print
   a blank copy, or fill one in on a client's record. A completed form keeps the
   questions it was filled in with.
+- **Measurements:** weight, height, waist and skinfolds in metric units. BMI is
+  worked out from the latest height. Body fat is estimated from skinfolds (see
+  below). A chart appears for each measure with two or more readings.
+- **Invoices:** drafts become numbered invoices when issued and cannot be
+  edited afterwards, only voided. Payments are recorded against them. Invoice
+  and receipt are PDFs with your letterhead. VAT is off until you tick *VAT
+  registered* in practice details. The income summary follows the UK tax year,
+  6 April to 5 April.
+- **Letters:** templates with fill-in fields such as `[Client name]`, saved per
+  client and exported as PDF. Starting a letter to a GP warns if no consent to
+  share with the GP is recorded.
+- **Dates** are typed and shown as day/month/year whatever language Chrome is
+  set to.
 
-Two note templates and one intake form are created on first use as starting
-points. Edit or hide them under *Templates and forms*.
+Two note templates, one intake form and one GP letter template are created on
+first use as starting points. Edit or hide them under *Templates and forms*.
+
+### Body fat equations
+
+Skinfolds are turned into body density, then into body fat with the Siri
+equation, body fat % = (4.95 / density - 4.50) x 100.
+
+- Durnin and Womersley (1974), biceps, triceps, subscapular and suprailiac,
+  with separate coefficients by sex and age band.
+- Jackson and Pollock (1978) for men and Jackson, Pollock and Ward (1980) for
+  women: 3 sites (men chest, abdomen, thigh; women triceps, suprailiac, thigh)
+  and 7 sites.
+
+The coefficients are in `foodforthought/measurements.py` and checked against
+hand calculations in `tests/test_measurements.py`. These are estimates with a
+wide margin of error, developed on adults.
+
+### Export and erasure
+
+*Export* makes an unencrypted zip of one client's whole record: a page to read,
+the same information as JSON, and their files.
+
+*Erase* removes the client and everything attached to them. Issued and voided
+invoices are kept, with the name and address printed on them and their
+payments, as financial records, and are no longer linked to a client. The
+activity log keeps its entries for the erased record, which hold record numbers
+only. Backups made earlier still contain the record until they are replaced.
+How long financial records must be kept is for the practitioner to decide with
+their accountant.
 
 ## Security model
 
@@ -81,7 +122,7 @@ points. Edit or hide them under *Templates and forms*.
   the app is unlocked. Python cannot guarantee that key material is wiped from
   memory after locking.
 - Anything exported is no longer protected: a downloaded attachment, an `.ics`
-  file, a printed form.
+  file, a PDF, a record export, a printed form.
 
 ## Backup and restore
 
@@ -109,5 +150,6 @@ Manual checks for the Chromebook are in `docs/CHROMEBOOK_CHECKS.md`.
 ## Licence
 
 AGPL-3.0-or-later. Food composition data is never bundled, only imported from
-files the user downloads. htmx (`static/vendor`) is included under the
-Zero-Clause BSD licence.
+files the user downloads. Included third-party files: htmx (`static/vendor`,
+Zero-Clause BSD) and the DejaVu Sans fonts used in PDFs (`fonts`, Bitstream
+Vera and public domain terms).

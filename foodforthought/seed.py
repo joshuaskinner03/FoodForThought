@@ -39,7 +39,32 @@ INTAKE_FIELDS = (
 )
 
 
+GP_LETTER = (
+    "Letter to GP",
+    "gp",
+    "[Client name], date of birth [Date of birth]",
+    "Dear [GP name],\n\n"
+    "I am writing to let you know that [Client name] is attending my practice for nutrition support.\n\n"
+    "[Summarise the reason for attending and what has been agreed.]\n\n"
+    "Please contact me if you would like any further information.\n\n"
+    "Yours sincerely,\n\n\n[My name]\n[Practice name]",
+)
+
+
 def apply(db: Database) -> None:
+    _core_admin(db)
+    if not db.get_setting("seeded_letters"):
+        now = now_iso()
+        with db.transaction():
+            db.execute(
+                "INSERT INTO letter_template(name, recipient, subject, body, created_at, updated_at) "
+                "VALUES(?, ?, ?, ?, ?, ?)",
+                (*GP_LETTER, now, now),
+            )
+            db.set_setting("seeded_letters", now)
+
+
+def _core_admin(db: Database) -> None:
     if db.get_setting("seeded_core_admin"):
         return
     now = now_iso()

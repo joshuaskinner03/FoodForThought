@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_macros.html" import input, area %}
+{% block title %}Practice details · FoodForThought{% endblock %}
+{% block content %}
+<h1>Practice details</h1>
+<p class="muted">Shown at the top of invoices, receipts and letters.</p>
+<form method="post" action="/settings/practice">
+  <section class="card">
+    <h2>Who you are</h2>
+    <div class="grid">
+      {{ input("Practice name", "practice_name", values.practice_name) }}
+      {{ input("Your name", "practitioner_name", values.practitioner_name) }}
+      {{ input("Qualifications or registration", "credentials", values.credentials, hint="For example: Registered Nutritionist (AfN)") }}
+      {{ input("Phone", "practice_phone", values.practice_phone, type="tel") }}
+      {{ input("Email", "practice_email", values.practice_email, type="email") }}
+      {{ input("Website", "practice_website", values.practice_website) }}
+      {{ area("Address", "practice_address", values.practice_address, rows=3) }}
+    </div>
+  </section>
+  <section class="card">
+    <h2>Invoices</h2>
+    <div class="grid">
+      {{ input("Invoice number prefix", "invoice_prefix", values.invoice_prefix) }}
+      {{ input("Next invoice number", "invoice_next", values.invoice_next, type="number", hint="Numbers are given out in order when an invoice is issued.") }}
+      {{ input("Payment due after this many days", "payment_terms_days", values.payment_terms_days, type="number") }}
+      {{ area("How to pay", "payment_details", values.payment_details, rows=3, hint="For example your bank name, sort code and account number. Printed on unpaid invoices.") }}
+      {{ area("Small print at the foot of every invoice", "invoice_footer", values.invoice_footer, rows=2) }}
+    </div>
+  </section>
+  <section class="card">
+    <h2>VAT</h2>
+    <label class="option"><input type="checkbox" name="vat_registered"{% if values.vat_registered %} checked{% endif %}> I am VAT registered</label>
+    <p class="hint">Leave unticked if you are not registered. Invoices then show no VAT. Prices you type on an invoice are before VAT, and VAT is added on top. Changing this affects new invoices only.</p>
+    <div class="grid">
+      {{ input("VAT number", "vat_number", values.vat_number) }}
+      {{ input("VAT rate, per cent", "vat_rate_percent", values.vat_rate_percent) }}
+    </div>
+  </section>
+  <div class="actions">
+    <button type="submit">Save practice details</button>
+    <a href="/settings">Back to settings</a>
+  </div>
+</form>
+<section class="card logo-card">
+  <h2>Logo</h2>
+  {% if has_logo %}
+  <p><img class="logo-preview" src="/settings/practice/logo" alt="Current logo"></p>
+  <form method="post" action="/settings/practice/logo/delete"><button class="link danger-text" type="submit" data-confirm="Remove the logo?">Remove logo</button></form>
+  {% else %}
+  <p class="muted">No logo yet. Invoices and letters show your practice name only.</p>
+  {% endif %}
+  <form method="post" action="/settings/practice/logo" enctype="multipart/form-data">
+    <div class="field">
+      <label for="file">{{ "Replace with" if has_logo else "Add" }} a PNG or JPEG image, up to 5 MB</label>
+      <input id="file" name="file" type="file" accept="image/png,image/jpeg" required>
+    </div>
+    <button type="submit">Save logo</button>
+  </form>
+</section>
+{% endblock %}

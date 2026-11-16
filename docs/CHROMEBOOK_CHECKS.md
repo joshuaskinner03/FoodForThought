@@ -2,6 +2,49 @@
 
 Do these in order. Note anything that differs from "Expect".
 
+## Phase 1b
+
+1. **Swap the program folder.** In *Linux files*, delete the old
+   `foodforthought` folder. Extract the new zip and move its `foodforthought`
+   folder into *Linux files*. The records are stored elsewhere and are not
+   touched.
+2. **Start.** In Terminal:
+   ```
+   cd foodforthought
+   bash start.sh
+   ```
+   Expect the one-off setup message (it needs the internet this once), then the
+   unlock page. After unlocking, the clients from before should still be there.
+3. **Dates.** Open Clients → New client. Expect the date of birth box to show
+   `dd/mm/yyyy`. Type 05/12/1990 and save: the record should say 5 Dec 1990.
+   Press *Calendar* next to any date box: a calendar should open, and picking a
+   day should fill the box as day/month/year.
+4. **Practice details.** Settings → Edit practice details. Fill in the name,
+   address and how to pay. Add a logo (PNG or JPEG).
+5. **Measurements.** Open a client with a sex and date of birth → Measurements.
+   Add a reading with weight and height, then a second with weight only, on
+   different dates. Expect BMI on both rows and a weight chart and a BMI chart.
+   Hover over a point: its date and value should appear.
+6. **Body fat.** Add a reading with skinfolds and choose an equation. The list
+   says which sites each equation needs. Expect a body fat percentage.
+7. **Invoice.** Client → Invoices → New invoice. Add two lines, Save draft and
+   check the total. Issue invoice. Download the PDF and open it: check the
+   letterhead, logo, name, lines, total and how to pay.
+8. **Payment and receipt.** Record a payment for part of the amount (expect
+   "Part paid"), then the rest (expect "Paid"). Download the receipt PDF.
+9. **Income summary.** Invoices → Income summary. Expect this month to show
+   the amount invoiced and received.
+10. **Letter.** Client → Letters → *Letter to GP*. Expect the names filled in
+    and a warning if no GP consent is recorded. Save, then download the PDF.
+11. **Export.** Client → Overview → *Export or erase this record* → Download
+    record as a zip. Open `record.html` from the zip in Chrome and check it
+    reads sensibly. Delete the zip afterwards.
+12. **Erase.** Do this on a made-up client with an issued invoice. Type their
+    name and erase. Expect the client gone from Clients, the invoice still
+    under Invoices → All, and "Client N (erased)" in the activity log.
+13. **Backup.** Download a new encrypted backup to the USB stick and discard
+    the older backup files.
+
 ## Phase 1a
 
 1. **Put the new folder in place.** Extract the zip and move the

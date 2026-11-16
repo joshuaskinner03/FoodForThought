@@ -26,6 +26,7 @@
     <dd>{% if latest_note %}<a href="/clients/{{ client.id }}/notes#note-{{ latest_note.id }}">{{ latest_note.note_date|nice_date }}{% if latest_note.title %}: {{ latest_note.title }}{% endif %}</a>{% else %}None yet. <a href="/clients/{{ client.id }}/notes/new">Write one</a>{% endif %}</dd>
   </dl>
 </section>
+<p class="aside"><a href="/clients/{{ client.id }}/data">Export or erase this record</a></p>
 <form class="aside" method="post" action="/clients/{{ client.id }}/archive">
   {% if client.archived %}
   <input type="hidden" name="restore" value="1">

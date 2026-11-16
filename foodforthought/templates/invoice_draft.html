@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_macros.html" import date_input %}
+{% block title %}Draft invoice · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Draft invoice</h1>
+  <a class="button quiet" href="/invoices?show=draft">All drafts</a>
+</div>
+{% if not practice.display_name %}
+<p class="warn">Your practice details are empty. <a href="/settings/practice">Add them</a> before issuing this invoice.</p>
+{% endif %}
+<form method="post" action="/invoices/{{ invoice.id }}">
+  <input type="hidden" name="count" value="{{ invoice.lines|length }}">
+  <section class="card">
+    <div class="grid">
+      <div class="field"><label for="bill_to_name">Invoice to</label><input id="bill_to_name" name="bill_to_name" value="{{ invoice.bill_to_name }}"></div>
+      <div class="field"><label for="bill_to_address">Address</label><textarea id="bill_to_address" name="bill_to_address" rows="3">{{ invoice.bill_to_address }}</textarea></div>
+      {{ date_input("Invoice date", "issue_date", invoice.issue_date, required=true) }}
+      {{ date_input("Payment due", "due_date", invoice.due_date) }}
+    </div>
+  </section>
+  <section class="card" id="lines">
+    <h2>Lines</h2>
+    <datalist id="services">{% for s in services %}<option value="{{ s }}">{% endfor %}</datalist>
+    {% for line in invoice.lines %}
+    <div class="line-row">
+      <div class="field"><label for="l{{ loop.index0 }}_description">Description</label><input id="l{{ loop.index0 }}_description" name="l{{ loop.index0 }}_description" list="services" value="{{ line.description }}"></div>
+      <div class="field"><label for="l{{ loop.index0 }}_quantity">Quantity</label><input id="l{{ loop.index0 }}_quantity" name="l{{ loop.index0 }}_quantity" inputmode="decimal" value="{{ line.quantity }}"></div>
+      <div class="field"><label for="l{{ loop.index0 }}_unit">Price each, £</label><input id="l{{ loop.index0 }}_unit" name="l{{ loop.index0 }}_unit" inputmode="decimal" value="{{ line.unit_text }}"></div>
+      <button class="link danger-text" type="submit" name="action" value="remove:{{ loop.index0 }}" aria-label="Remove line {{ loop.index }}">Remove</button>
+    </div>
+    {% else %}
+    <p class="muted">No lines yet.</p>
+    {% endfor %}
+    <button class="quiet" type="submit" name="action" value="add">Add a line</button>
+    {% if not error %}
+    <dl class="totals">
+      {% if invoice.vat_bp %}
+      <dt>Net</dt><dd>{{ invoice.totals.net|money }}</dd>
+      <dt>VAT at {{ (invoice.vat_bp / 100)|plain }}%</dt><dd>{{ invoice.totals.vat|money }}</dd>
+      {% endif %}
+      <dt>Total</dt><dd><strong>{{ invoice.totals.total|money }}</strong></dd>
+    </dl>
+    <p class="hint">The total updates when you save.{% if not invoice.vat_bp %} No VAT is charged because you are not marked as VAT registered.{% endif %}</p>
+    {% endif %}
+  </section>
+  <section class="card">
+    <div class="field wide"><label for="notes">Note printed on the invoice</label><textarea id="notes" name="notes" rows="2">{{ invoice.notes }}</textarea></div>
+  </section>
+  <div class="actions">
+    <button type="submit" name="action" value="save">Save draft</button>
+    <button type="submit" name="action" value="issue" data-confirm="Issue this invoice? It gets the next invoice number and can no longer be edited.">Issue invoice</button>
+  </div>
+</form>
+<form class="aside" method="post" action="/invoices/{{ invoice.id }}/delete">
+  <button class="link danger-text" type="submit" data-confirm="Delete this draft?">Delete draft</button>
+</form>
+{% endblock %}

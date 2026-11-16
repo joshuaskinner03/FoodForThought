@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Record for {{ name }}</title>
+<style>
+body { font-family: system-ui, sans-serif; line-height: 1.5; max-width: 50rem; margin: 2rem auto; padding: 0 1rem; color: #1d2a24; }
+h1 { margin-bottom: 0; }
+h2 { margin-top: 2rem; border-bottom: 1px solid #ccc; padding-bottom: 0.2rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: 0.3rem 0.6rem 0.3rem 0; border-bottom: 1px solid #e3e3e3; }
+th { white-space: nowrap; }
+.pre { white-space: pre-wrap; }
+.muted { color: #666; }
+article { margin: 1rem 0; padding-bottom: 0.6rem; border-bottom: 1px solid #e3e3e3; }
+</style>
+</head>
+<body>
+<h1>Record for {{ name }}</h1>
+<p class="muted">Exported {{ record.exported_at|local_stamp }}{% if record.exported_by %} by {{ record.exported_by }}{% endif %}. This is a copy of the information held.</p>
+
+<h2>Details</h2>
+{% set c = record.client %}
+<table>
+  <tr><th>Name</th><td>{{ name }}{% if c.preferred_name %} (known as {{ c.preferred_name }}){% endif %}</td></tr>
+  <tr><th>Date of birth</th><td>{{ c.date_of_birth|nice_date }}</td></tr>
+  <tr><th>Sex</th><td>{{ sex_label.get(c.sex, "") }}</td></tr>
+  <tr><th>Phone</th><td>{{ c.phone }}</td></tr>
+  <tr><th>Email</th><td>{{ c.email }}</td></tr>
+  <tr><th>Address</th><td class="pre">{{ c.address }}</td></tr>
+  <tr><th>GP</th><td class="pre">{{ c.gp_name }}
+{{ c.gp_address }}</td></tr>
+  <tr><th>Medical history</th><td class="pre">{{ c.medical_history }}</td></tr>
+  <tr><th>Allergies and intolerances</th><td class="pre">{{ c.allergies }}</td></tr>
+  <tr><th>Medications and supplements</th><td class="pre">{{ c.medications }}</td></tr>
+  <tr><th>Goals</th><td class="pre">{{ c.goals }}</td></tr>
+  <tr><th>Record created</th><td>{{ c.created_at|local_stamp }}</td></tr>
+</table>
+
+<h2>Consent</h2>
+{% if record.consents %}
+<table>
+  <tr><th>For</th><th>Given</th><th>How</th><th>Note</th><th>Withdrawn</th></tr>
+  {% for item in record.consents %}<tr><td>{{ item.kind }}</td><td>{{ item.given_on|nice_date }}</td><td>{{ item.method }}</td><td>{{ item.note }}</td><td>{{ item.withdrawn_on|nice_date }}</td></tr>{% endfor %}
+</table>
+{% else %}<p class="muted">None.</p>{% endif %}
+
+<h2>Appointments</h2>
+{% if record.appointments %}
+<table>
+  <tr><th>Date</th><th>Time</th><th>Minutes</th><th>Type</th><th>Location</th><th>Status</th><th>Diary note</th></tr>
+  {% for item in record.appointments %}<tr><td>{{ item.date|nice_date }}</td><td>{{ item.start_time }}</td><td>{{ item.duration_minutes }}</td><td>{{ item.title }}</td><td>{{ item.location }}</td><td>{{ item.status }}</td><td>{{ item.notes }}</td></tr>{% endfor %}
+</table>
+{% else %}<p class="muted">None.</p>{% endif %}
+
+<h2>Session notes</h2>
+{% for item in record.notes %}
+<article><h3>{{ item.note_date|nice_date }}{% if item.title %}: {{ item.title }}{% endif %}</h3><p class="pre">{{ item.body }}</p></article>
+{% else %}<p class="muted">None.</p>{% endfor %}
+
+<h2>Completed forms</h2>
+{% for item in record.forms %}
+<article>
+  <h3>{{ item.form }}, {{ item.completed_on|nice_date }}</h3>
+  <table>{% for answer in item.answers %}<tr><th>{{ answer.question }}</th><td class="pre">{{ answer.answer|join(", ") if answer.answer is not string else answer.answer }}</td></tr>{% endfor %}</table>
+</article>
+{% else %}<p class="muted">None.</p>{% endfor %}
+
+<h2>Measurements</h2>
+{% if record.measurements %}
+<table>
+  <tr><th>Date</th><th>Weight, kg</th><th>Height, cm</th><th>BMI</th><th>Waist, cm</th><th>Body fat, %</th><th>Skinfolds, mm</th><th>Note</th></tr>
+  {% for item in record.measurements %}<tr><td>{{ item.measured_on|nice_date }}</td><td>{{ item.weight_kg|number }}</td><td>{{ item.height_cm|number }}</td><td>{{ item.bmi|number }}</td><td>{{ item.waist_cm|number }}</td><td>{{ item.body_fat_percent|number }}</td><td>{% for site, value in item.skinfolds.items() %}{{ site }} {{ value|plain }}{% if not loop.last %}, {% endif %}{% endfor %}</td><td>{{ item.notes }}</td></tr>{% endfor %}
+</table>
+{% else %}<p class="muted">None.</p>{% endif %}
+
+<h2>Letters</h2>
+{% for item in record.letters %}
+<article><h3>{{ item.letter_date|nice_date }}{% if item.subject %}: {{ item.subject }}{% endif %}</h3><p class="muted pre">To: {{ item.recipient_name }}
+{{ item.recipient_address }}</p><p class="pre">{{ item.body }}</p></article>
+{% else %}<p class="muted">None.</p>{% endfor %}
+
+<h2>Invoices</h2>
+{% for item in record.invoices %}
+<article>
+  <h3>{{ item.number or "Draft" }}, {{ item.issue_date|nice_date }} ({{ item.status }})</h3>
+  <table>
+    <tr><th>Description</th><th>Quantity</th><th>Price each</th><th>Amount</th></tr>
+    {% for line in item.lines %}<tr><td>{{ line.description }}</td><td>{{ line.quantity }}</td><td>{{ line.unit_pence|money }}</td><td>{{ line.total_pence|money }}</td></tr>{% endfor %}
+    <tr><th colspan="3">Total</th><td>{{ item.totals.total|money }}</td></tr>
+    {% for payment in item.payments %}<tr><td colspan="3">Paid {{ payment.paid_on|nice_date }} {{ payment.method }}</td><td>{{ payment.amount_pence|money }}</td></tr>{% endfor %}
+  </table>
+</article>
+{% else %}<p class="muted">None.</p>{% endfor %}
+
+<h2>Files</h2>
+{% if record.files %}
+<table>
+  <tr><th>File</th><th>Description</th><th>Added</th></tr>
+  {% for item in record.files %}<tr><td>{% if item.file %}<a href="{{ item.file }}">{{ item.original_name }}</a>{% else %}{{ item.original_name }} (missing){% endif %}</td><td>{{ item.description }}</td><td>{{ item.added|local_stamp }}</td></tr>{% endfor %}
+</table>
+{% else %}<p class="muted">None.</p>{% endif %}
+
+<h2>Activity on this record</h2>
+<table>
+  <tr><th>When</th><th>Action</th><th>Detail</th></tr>
+  {% for item in record.activity %}<tr><td>{{ item.ts|local_stamp }}</td><td>{{ item.action }}</td><td>{{ item.detail }}</td></tr>{% endfor %}
+</table>
+</body>
+</html>

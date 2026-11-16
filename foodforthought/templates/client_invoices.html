@@ -1,0 +1,13 @@
+{% extends "client_base.html" %}
+{% block tab %}
+<div class="card-head">
+  <h2>Invoices</h2>
+  <form method="post" action="/invoices/new">
+    <input type="hidden" name="client_id" value="{{ client.id }}">
+    <button class="small" type="submit">New invoice</button>
+  </form>
+</div>
+<section class="card">
+  {% include "_invoice_rows.html" %}
+</section>
+{% endblock %}

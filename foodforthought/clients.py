@@ -80,6 +80,7 @@ def active(db: Database) -> list:
 
 def read_form(form: FormData) -> tuple[dict, list[str]]:
     values = {name: text(form, name) for name in FIELDS}
+    values["date_of_birth"] = fmt.iso(values["date_of_birth"])
     errors = []
     if not values["first_name"] or not values["last_name"]:
         errors.append("First name and last name are needed.")
