@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Restore · Larder{% endblock %}
+{% block main_class %}narrow{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Restore from a backup</h1>
+  {% if initialised %}
+  <p class="warn"><strong>This replaces everything currently stored.</strong> The current data is kept as a safety copy until you delete it in Settings.</p>
+  {% endif %}
+  <form method="post" action="/restore" enctype="multipart/form-data">
+    <label for="file">Backup file (.larderbackup)</label>
+    <input id="file" name="file" type="file" required>
+    <label for="password">Password the backup was made with</label>
+    <input id="password" name="password" type="password" autocomplete="off" required>
+    <button type="submit">Restore</button>
+  </form>
+</section>
+<p class="aside"><a href="/">Cancel</a></p>
+{% endblock %}

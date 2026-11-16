@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Set up Larder{% endblock %}
+{% block main_class %}narrow{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Set up Larder</h1>
+  <p>Choose a password. It encrypts every record on this device.</p>
+  <p class="warn"><strong>There is no password reset.</strong> If the password is lost, the records cannot be recovered. Write it down and keep it somewhere safe.</p>
+  <form method="post" action="/setup">
+    <label for="password">Password (at least {{ min_password }} characters)</label>
+    <input id="password" name="password" type="password" autocomplete="new-password" minlength="{{ min_password }}" required autofocus>
+    <label for="confirm">Repeat password</label>
+    <input id="confirm" name="confirm" type="password" autocomplete="new-password" required>
+    <button type="submit">Create encrypted store</button>
+  </form>
+</section>
+<p class="aside">Moving from another device? <a href="/restore">Restore from a backup</a></p>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Activity log · Larder{% endblock %}
+{% block content %}
+<h1>Activity log</h1>
+<section class="card">
+  <table>
+    <thead><tr><th>Time (UTC)</th><th>Action</th><th>Detail</th></tr></thead>
+    <tbody>
+      {% for entry in entries %}
+      <tr><td>{{ entry.ts }}</td><td>{{ entry.action }}</td><td>{{ entry.detail }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
