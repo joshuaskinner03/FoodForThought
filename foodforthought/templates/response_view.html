@@ -1,0 +1,31 @@
+{% extends "client_base.html" %}
+{% block tab %}
+<section class="card printable">
+  <div class="card-head">
+    <h2>{{ response.form_name }}</h2>
+    <span class="row-actions no-print">
+      <button class="link" type="button" data-print>Print</button>
+      <a href="/clients/{{ client.id }}/forms/{{ response.id }}/edit">Edit</a>
+      <form method="post" action="/clients/{{ client.id }}/forms/{{ response.id }}/delete"><button class="link danger-text" type="submit" data-confirm="Delete this completed form for good?">Delete</button></form>
+    </span>
+  </div>
+  <p class="muted">Completed {{ response.completed_on|nice_date }}</p>
+  {% for f in response.fields %}
+    {% if f.type == "heading" %}
+    <h3 class="form-heading">{{ f.label }}</h3>
+    {% else %}
+    {% set value = response.answers.get(f.id, "") %}
+    <div class="block">
+      <h4>{{ f.label }}</h4>
+      {% if value is string %}
+        {% if value %}<p class="pre">{{ value|nice_date if f.type == "date" else value }}</p>{% else %}<p class="muted">Not answered</p>{% endif %}
+      {% elif value %}
+        <p>{{ value|join(", ") }}</p>
+      {% else %}
+        <p class="muted">Not answered</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  {% endfor %}
+</section>
+{% endblock %}

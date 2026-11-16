@@ -1,0 +1,61 @@
+{% macro input(label, name, value="", type="text", required=false, hint="") %}
+<div class="field">
+  <label for="{{ name }}">{{ label }}</label>
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ value if value is not none else '' }}"{% if required %} required{% endif %}>
+  {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro area(label, name, value="", rows=4, hint="") %}
+<div class="field wide">
+  <label for="{{ name }}">{{ label }}</label>
+  <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}">{{ value if value is not none else '' }}</textarea>
+  {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro text_block(label, value) %}
+<div class="block">
+  <h3>{{ label }}</h3>
+  {% if value %}<p class="pre">{{ value }}</p>{% else %}<p class="muted">Nothing recorded.</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro status_badge(item) %}<span class="badge {{ item.status }}">{{ item.status_label }}</span>{% endmacro %}
+
+{% macro form_fields(fields, answers, blank=false) %}
+{% for f in fields %}
+  {% set value = answers.get(f.id, "") %}
+  {% if f.type == "heading" %}
+  <h2 class="form-heading">{{ f.label }}</h2>
+  {% else %}
+  <div class="field wide question">
+    {% if f.type in ("yesno", "choice", "multi") %}
+    <fieldset>
+      <legend>{{ f.label }}{% if f.required %} <span class="req">(needed)</span>{% endif %}</legend>
+      {% set options = ["Yes", "No"] if f.type == "yesno" else f.options %}
+      {% for option in options %}
+      <label class="option">
+        {% if f.type == "multi" %}
+        <input type="checkbox" name="a_{{ f.id }}" value="{{ option }}"{% if option in value %} checked{% endif %}{% if blank %} disabled{% endif %}>
+        {% else %}
+        <input type="radio" name="a_{{ f.id }}" value="{{ option }}"{% if option == value %} checked{% endif %}{% if blank %} disabled{% endif %}>
+        {% endif %}
+        {{ option }}
+      </label>
+      {% endfor %}
+    </fieldset>
+    {% else %}
+    <label for="a_{{ f.id }}">{{ f.label }}{% if f.required %} <span class="req">(needed)</span>{% endif %}</label>
+    {% if blank %}
+    <div class="blank-line{% if f.type == 'textarea' %} tall{% endif %}"></div>
+    {% elif f.type == "textarea" %}
+    <textarea id="a_{{ f.id }}" name="a_{{ f.id }}" rows="4">{{ value }}</textarea>
+    {% else %}
+    <input id="a_{{ f.id }}" name="a_{{ f.id }}" type="{{ f.type }}"{% if f.type == 'number' %} step="any"{% endif %} value="{{ value }}">
+    {% endif %}
+    {% endif %}
+  </div>
+  {% endif %}
+{% endfor %}
+{% endmacro %}

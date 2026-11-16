@@ -1,0 +1,35 @@
+{% extends "client_base.html" %}
+{% block tab %}
+<section class="card">
+  <h2>{{ "Edit note" if note else "New note" }}</h2>
+  {% if not note and note_templates %}
+  <p class="chips">Start from:
+    <a href="/clients/{{ client.id }}/notes/new{% if values.appointment_id %}?appointment={{ values.appointment_id }}{% endif %}">Blank</a>
+    {% for t in note_templates %}
+    <a href="/clients/{{ client.id }}/notes/new?template={{ t.id }}{% if values.appointment_id %}&amp;appointment={{ values.appointment_id }}{% endif %}">{{ t.name }}</a>
+    {% endfor %}
+  </p>
+  {% endif %}
+  <form method="post" action="{{ '/clients/%d/notes/%d/edit' % (client.id, note.id) if note else '/clients/%d/notes/new' % client.id }}">
+    <input type="hidden" name="appointment_id" value="{{ values.appointment_id }}">
+    <div class="grid">
+      <div class="field">
+        <label for="note_date">Date</label>
+        <input id="note_date" name="note_date" type="date" value="{{ values.note_date }}" required>
+      </div>
+      <div class="field">
+        <label for="title">Title</label>
+        <input id="title" name="title" value="{{ values.title }}">
+      </div>
+      <div class="field wide">
+        <label for="body">Note</label>
+        <textarea id="body" name="body" rows="18" required>{{ values.body }}</textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit">Save note</button>
+      <a href="/clients/{{ client.id }}/notes">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Diary · FoodForThought{% endblock %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Diary</h1>
+  <a class="button" href="/diary/new">New appointment</a>
+</div>
+<div class="week-nav">
+  <a class="button quiet small" href="/diary?week={{ previous }}">&larr; Previous week</a>
+  <strong>{{ week_label }}</strong>
+  <span>
+    <a class="button quiet small" href="/diary">This week</a>
+    <a class="button quiet small" href="/diary?week={{ following }}">Next week &rarr;</a>
+  </span>
+</div>
+<div class="week">
+  {% for day in days %}
+  <section class="day{% if day.is_today %} today{% endif %}">
+    <header>
+      <h2>{{ day.weekday }} <span>{{ day.label }}</span></h2>
+      <a href="/diary/new?day={{ day.date }}" title="New appointment on {{ day.date|long_date }}" aria-label="New appointment on {{ day.date|long_date }}">+</a>
+    </header>
+    {% for a in day.appointments %}
+    <a class="slot {{ a.status }}" href="/diary/{{ a.id }}">
+      <span class="when">{{ a.start_time }} to {{ a.end_time }}</span>
+      <span class="who">{{ a.client_name or a.title }}</span>
+      {% if a.client_name and a.title %}<span class="what">{{ a.title }}</span>{% endif %}
+      {% if a.status != "booked" %}<span class="what">{{ a.status_label }}</span>{% endif %}
+    </a>
+    {% else %}
+    <p class="muted empty">Free</p>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+<section class="card export">
+  <h2>Export to a calendar file</h2>
+  <p class="hint">Makes an .ics file you can import into Google Calendar or another calendar. The file is not encrypted, and anything you import into an online calendar leaves this device. Initials are used unless you choose full names. Cancelled appointments are left out.</p>
+  <form method="get" action="/diary/export.ics">
+    <div class="grid three">
+      <div class="field"><label for="start">From</label><input id="start" name="start" type="date" value="{{ today }}" required></div>
+      <div class="field"><label for="end">To</label><input id="end" name="end" type="date" value="{{ export_end }}" required></div>
+      <div class="field">
+        <label for="names">Client names</label>
+        <select id="names" name="names"><option value="initials">Initials only</option><option value="full">Full names</option></select>
+      </div>
+    </div>
+    <button type="submit">Download .ics file</button>
+  </form>
+</section>
+{% endblock %}

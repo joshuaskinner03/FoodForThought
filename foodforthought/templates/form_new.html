@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}New form · FoodForThought{% endblock %}
+{% block main_class %}narrow{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>New form</h1>
+  <form method="post" action="/library/forms/new">
+    <div class="field"><label for="name">Name</label><input id="name" name="name" value="{{ values.name or '' }}" required autofocus></div>
+    <div class="field">
+      <label for="kind">Kind</label>
+      <select id="kind" name="kind">{% for value, label in kinds %}<option value="{{ value }}"{% if values.kind == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    </div>
+    <div class="actions"><button type="submit">Create and add questions</button><a href="/library">Cancel</a></div>
+  </form>
+</section>
+{% endblock %}

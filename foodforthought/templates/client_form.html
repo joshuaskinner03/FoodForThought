@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_macros.html" import input, area %}
+{% block title %}{{ "Edit client" if client else "New client" }} · FoodForThought{% endblock %}
+{% block content %}
+<h1>{{ "Edit client" if client else "New client" }}</h1>
+<form method="post" action="{{ '/clients/%d/edit' % client.id if client else '/clients/new' }}">
+  <section class="card">
+    <h2>Details</h2>
+    <div class="grid">
+      {{ input("First name", "first_name", values.first_name, required=true) }}
+      {{ input("Last name", "last_name", values.last_name, required=true) }}
+      {{ input("Preferred name", "preferred_name", values.preferred_name) }}
+      {{ input("Date of birth", "date_of_birth", values.date_of_birth, type="date") }}
+      <div class="field">
+        <label for="sex">Sex</label>
+        <select id="sex" name="sex">
+          {% for value, label in sex_options %}<option value="{{ value }}"{% if values.sex == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <p class="hint">Used later to choose nutrient reference values.</p>
+      </div>
+      {{ input("Phone", "phone", values.phone, type="tel") }}
+      {{ input("Email", "email", values.email, type="email") }}
+      {{ area("Address", "address", values.address, rows=3) }}
+    </div>
+  </section>
+  <section class="card">
+    <h2>GP</h2>
+    <div class="grid">
+      {{ input("GP name", "gp_name", values.gp_name) }}
+      {{ area("GP practice and address", "gp_address", values.gp_address, rows=3) }}
+    </div>
+  </section>
+  <section class="card">
+    <h2>Health and goals</h2>
+    <div class="grid">
+      {{ area("Medical history", "medical_history", values.medical_history) }}
+      {{ area("Allergies and intolerances", "allergies", values.allergies, rows=3, hint="Shown at the top of the client's record.") }}
+      {{ area("Medications and supplements", "medications", values.medications) }}
+      {{ area("Goals", "goals", values.goals) }}
+    </div>
+  </section>
+  <div class="actions">
+    <button type="submit">{{ "Save changes" if client else "Add client" }}</button>
+    <a href="{{ '/clients/%d' % client.id if client else '/clients' }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ name }} · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ name }}{% if client.preferred_name %} <span class="muted">({{ client.preferred_name }})</span>{% endif %}</h1>
+    <p class="muted sub">
+      {% if client.date_of_birth %}Born {{ client.date_of_birth|nice_date }}, age {{ age }}{% else %}Date of birth not recorded{% endif %}
+      {% if client.archived %}&middot; <span class="badge cancelled">Archived</span>{% endif %}
+    </p>
+  </div>
+  <a class="button quiet" href="/clients/{{ client.id }}/edit">Edit details</a>
+</div>
+{% if client.allergies %}
+<p class="warn"><strong>Allergies and intolerances:</strong> <span class="pre">{{ client.allergies }}</span></p>
+{% endif %}
+<nav class="tabs" aria-label="Client record">
+  <a href="/clients/{{ client.id }}"{% if tab == 'overview' %} class="here" aria-current="page"{% endif %}>Overview</a>
+  <a href="/clients/{{ client.id }}/appointments"{% if tab == 'appointments' %} class="here" aria-current="page"{% endif %}>Appointments</a>
+  <a href="/clients/{{ client.id }}/notes"{% if tab == 'notes' %} class="here" aria-current="page"{% endif %}>Notes</a>
+  <a href="/clients/{{ client.id }}/forms"{% if tab == 'forms' %} class="here" aria-current="page"{% endif %}>Forms</a>
+  <a href="/clients/{{ client.id }}/documents"{% if tab == 'documents' %} class="here" aria-current="page"{% endif %}>Consent and files</a>
+</nav>
+{% block tab %}{% endblock %}
+{% endblock %}

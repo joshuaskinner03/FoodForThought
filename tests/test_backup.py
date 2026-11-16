@@ -5,8 +5,8 @@ import tarfile
 import pytest
 from fastapi.testclient import TestClient
 
-from larder.app import create_app
-from larder.config import Config
+from foodforthought.app import create_app
+from foodforthought.config import Config
 
 from .conftest import BASE_URL, FAST_KDF, PASSWORD, core_of
 
@@ -14,7 +14,7 @@ from .conftest import BASE_URL, FAST_KDF, PASSWORD, core_of
 def make_backup(client) -> bytes:
     response = client.post("/backup")
     assert response.status_code == 200
-    assert ".larderbackup" in response.headers["content-disposition"]
+    assert ".fftbackup" in response.headers["content-disposition"]
     return response.content
 
 
@@ -22,7 +22,7 @@ def restore(client, data: bytes, password: str = PASSWORD):
     return client.post(
         "/restore",
         data={"password": password},
-        files={"file": ("backup.larderbackup", data, "application/octet-stream")},
+        files={"file": ("backup.fftbackup", data, "application/octet-stream")},
     )
 
 
@@ -56,7 +56,7 @@ def test_backup_contains_no_plaintext(populated):
     assert b"marker" not in data
     with tarfile.open(fileobj=io.BytesIO(data)) as tar:
         names = set(tar.getnames())
-    assert {"manifest.json", "vault.json", "larder.db"} <= names
+    assert {"manifest.json", "vault.json", "records.db"} <= names
     assert any(name.startswith("attachments/") for name in names)
     assert core_of(populated).db.get_setting("last_backup")
 
@@ -84,7 +84,7 @@ def test_restore_over_existing_data_keeps_safety_copy(populated, cfg):
     populated.post("/unlock", data={"password": PASSWORD})
     assert core_of(populated).db.get_setting("marker") == "kept"
     copies = list(cfg.data_dir.glob("pre-restore-*"))
-    assert len(copies) == 1 and (copies[0] / "larder.db").exists()
+    assert len(copies) == 1 and (copies[0] / "records.db").exists()
     assert copies[0].name in populated.get("/settings").text
     assert populated.post("/settings/safety-copy/delete").status_code == 303
     assert not list(cfg.data_dir.glob("pre-restore-*"))
@@ -119,9 +119,9 @@ def test_rejects_non_backup_files(populated):
 
 def test_rejects_tampered_database(populated):
     def flip(members):
-        blob = bytearray(members["larder.db"])
+        blob = bytearray(members["records.db"])
         blob[-1] ^= 1
-        members["larder.db"] = bytes(blob)
+        members["records.db"] = bytes(blob)
 
     response = restore(populated, rebuild(make_backup(populated), flip))
     assert response.status_code == 400 and "altered" in response.text
@@ -130,12 +130,12 @@ def test_rejects_tampered_database(populated):
 def test_rejects_tampered_manifest(populated):
     def edit(members):
         manifest = json.loads(members["manifest.json"])
-        blob = bytearray(members["larder.db"])
+        blob = bytearray(members["records.db"])
         blob[-1] ^= 1
-        members["larder.db"] = bytes(blob)
+        members["records.db"] = bytes(blob)
         import hashlib
 
-        manifest["files"]["larder.db"] = hashlib.sha256(members["larder.db"]).hexdigest()
+        manifest["files"]["records.db"] = hashlib.sha256(members["records.db"]).hexdigest()
         members["manifest.json"] = json.dumps(manifest).encode()
 
     response = restore(populated, rebuild(make_backup(populated), edit))
@@ -150,7 +150,7 @@ def test_rejects_extra_or_escaping_members(populated, cfg):
         members["attachments/" + "a" * 32 + ".bin"] = b"x"
 
     def missing(members):
-        del members["larder.db"]
+        del members["records.db"]
 
     data = make_backup(populated)
     for mutate in (traversal, extra, missing):

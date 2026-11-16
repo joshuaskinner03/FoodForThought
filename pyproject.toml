@@ -3,8 +3,8 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "larder"
-version = "0.0.1"
+name = "foodforthought"
+version = "0.1.0"
 description = "Local-only practice management for a private nutritionist"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -26,13 +26,13 @@ dependencies = [
 dev = ["pytest>=8", "httpx2>=2"]
 
 [project.scripts]
-larder = "larder.__main__:main"
+foodforthought = "foodforthought.__main__:main"
 
 [tool.setuptools.packages.find]
-include = ["larder*"]
+include = ["foodforthought*"]
 
 [tool.setuptools.package-data]
-larder = ["migrations/*.sql", "templates/*.html", "static/*"]
+foodforthought = ["migrations/*.sql", "templates/*.html", "static/*", "static/vendor/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

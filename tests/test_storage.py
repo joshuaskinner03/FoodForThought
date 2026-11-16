@@ -2,9 +2,9 @@ import json
 
 import pytest
 
-from larder.db import Database, DatabaseError
-from larder.files import AttachmentError, AttachmentStore
-from larder.vault import Vault, VaultError, WrongPassword
+from foodforthought.db import Database, DatabaseError
+from foodforthought.files import AttachmentError, AttachmentStore
+from foodforthought.vault import Vault, VaultError, WrongPassword
 
 from .conftest import FAST_KDF, PASSWORD
 

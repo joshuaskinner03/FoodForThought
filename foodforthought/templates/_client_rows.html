@@ -1,0 +1,19 @@
+{% if clients %}
+<table>
+  <thead><tr><th>Name</th><th>Age</th><th>Phone</th><th>Email</th></tr></thead>
+  <tbody>
+    {% for c in clients %}
+    <tr>
+      <td><a href="/clients/{{ c.id }}">{{ c.last_name }}, {{ c.first_name }}</a>{% if c.preferred_name %} <span class="muted">({{ c.preferred_name }})</span>{% endif %}</td>
+      <td>{{ c.age if c.age is not none else "" }}</td>
+      <td>{{ c.phone }}</td>
+      <td>{{ c.email }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% elif q %}
+<p class="muted">No clients match "{{ q }}".</p>
+{% else %}
+<p class="muted">{{ "No archived clients." if archived else "No clients yet. Add the first one with New client." }}</p>
+{% endif %}

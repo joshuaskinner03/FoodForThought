@@ -1,4 +1,4 @@
-from larder.app import COOKIE
+from foodforthought.app import COOKIE
 
 from .conftest import PASSWORD, core_of
 

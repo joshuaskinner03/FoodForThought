@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Templates and forms · FoodForThought{% endblock %}
+{% block content %}
+<h1>Templates and forms</h1>
+<section class="card">
+  <div class="card-head">
+    <h2>Note templates</h2>
+    <a class="button small" href="/library/note-templates/new">New template</a>
+  </div>
+  {% if note_templates %}
+  <table>
+    <tbody>
+      {% for t in note_templates %}
+      <tr{% if t.archived %} class="faded"{% endif %}>
+        <td><a href="/library/note-templates/{{ t.id }}">{{ t.name }}</a>{% if t.archived %} <span class="badge cancelled">Hidden</span>{% endif %}</td>
+        <td class="row-actions">
+          <form method="post" action="/library/note-templates/{{ t.id }}/archive">
+            {% if t.archived %}<input type="hidden" name="restore" value="1"><button class="link" type="submit">Show again</button>
+            {% else %}<button class="link" type="submit">Hide</button>{% endif %}
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No note templates yet.</p>
+  {% endif %}
+</section>
+<section class="card">
+  <div class="card-head">
+    <h2>Forms</h2>
+    <a class="button small" href="/library/forms/new">New form</a>
+  </div>
+  {% if forms %}
+  <table>
+    <tbody>
+      {% for f in forms %}
+      <tr{% if f.archived %} class="faded"{% endif %}>
+        <td><a href="/library/forms/{{ f.id }}">{{ f.name }}</a> <span class="muted">{{ f.kind }}</span>{% if f.archived %} <span class="badge cancelled">Hidden</span>{% endif %}</td>
+        <td class="row-actions">
+          <a href="/library/forms/{{ f.id }}/preview">Preview and print</a>
+          <form method="post" action="/library/forms/{{ f.id }}/archive">
+            {% if f.archived %}<input type="hidden" name="restore" value="1"><button class="link" type="submit">Show again</button>
+            {% else %}<button class="link" type="submit">Hide</button>{% endif %}
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No forms yet.</p>
+  {% endif %}
+  <p class="hint">To fill in a form for someone, open their record and choose Forms.</p>
+</section>
+{% endblock %}

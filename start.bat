@@ -18,4 +18,4 @@ if not exist .venv\.installed (
   type nul > .venv\.installed
 )
 
-.venv\Scripts\python.exe -m larder %*
+.venv\Scripts\python.exe -m foodforthought %*

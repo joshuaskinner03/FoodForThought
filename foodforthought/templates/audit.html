@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Activity log · FoodForThought{% endblock %}
+{% block content %}
+<h1>Activity log</h1>
+<section class="card">
+  <table>
+    <thead><tr><th>When</th><th>Action</th><th>Client</th><th>Detail</th></tr></thead>
+    <tbody>
+      {% for entry in entries %}
+      <tr>
+        <td>{{ entry.ts|local_stamp }}</td>
+        <td>{{ entry.action }}</td>
+        <td>{% if entry.client_id and entry.first_name %}<a href="/clients/{{ entry.client_id }}">{{ entry.first_name }} {{ entry.last_name }}</a>{% elif entry.client_id %}Client {{ entry.client_id }}{% endif %}</td>
+        <td>{{ entry.detail }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

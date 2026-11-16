@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Clients · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ "Archived clients" if archived else "Clients" }}</h1>
+  <a class="button" href="/clients/new">New client</a>
+</div>
+<form class="search" method="get" action="/clients" role="search">
+  {% if archived %}<input type="hidden" name="archived" value="1">{% endif %}
+  <label class="visually-hidden" for="q">Search clients</label>
+  <input id="q" name="q" type="search" value="{{ q }}" placeholder="Search by name or email" autocomplete="off" autofocus
+         hx-get="/clients" hx-trigger="input changed delay:200ms, search" hx-target="#client-rows" hx-include="closest form">
+  <button class="quiet" type="submit">Search</button>
+</form>
+<section class="card" id="client-rows">
+  {% include "_client_rows.html" %}
+</section>
+<p class="aside">
+  {% if archived %}<a href="/clients">Show active clients</a>{% else %}<a href="/clients?archived=1">Show archived clients</a>{% endif %}
+</p>
+{% endblock %}

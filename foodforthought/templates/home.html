@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block content %}
+<h1>Home</h1>
+<section class="card">
+  <div class="card-head">
+    <h2>Today, {{ today|long_date }}</h2>
+    <a class="button small" href="/diary/new">New appointment</a>
+  </div>
+  {% if appointments %}
+  <ul class="agenda">
+    {% for a in appointments %}
+    <li class="{{ a.status }}">
+      <span class="when">{{ a.start_time }} to {{ a.end_time }}</span>
+      <a href="/diary/{{ a.id }}">{{ a.title or "Appointment" }}</a>
+      {% if a.client_id %}<a href="/clients/{{ a.client_id }}">{{ a.client_name }}</a>{% endif %}
+      {{ status_badge(a) }}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No appointments today.</p>
+  {% endif %}
+</section>
+<section class="card">
+  <div class="card-head">
+    <h2>Clients</h2>
+    <a class="button small" href="/clients/new">New client</a>
+  </div>
+  <p><a href="/clients">{{ client_count }} active client{{ "" if client_count == 1 else "s" }}</a></p>
+</section>
+<section class="card">
+  <h2>Status</h2>
+  <dl class="facts">
+    <dt>Database</dt><dd>Encrypted (SQLCipher {{ cipher }})</dd>
+    <dt>Auto-lock</dt><dd>After {{ auto_lock }} minutes of inactivity</dd>
+    <dt>Last backup</dt><dd>{% if last_backup %}{{ last_backup|local_stamp }}{% else %}<span class="warn-text">Never</span>{% endif %}</dd>
+    <dt>Data folder</dt><dd><code>{{ data_dir }}</code></dd>
+  </dl>
+  <form method="post" action="/backup"><button type="submit">Download encrypted backup</button></form>
+</section>
+{% endblock %}

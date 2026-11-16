@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from larder.app import create_app
-from larder.config import Config, KdfParams
+from foodforthought.app import create_app
+from foodforthought.config import Config, KdfParams
 
 PASSWORD = "correct horse battery"
 BASE_URL = "http://127.0.0.1:8765"

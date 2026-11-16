@@ -1,46 +1,63 @@
-# Phase 0: checks to do by hand on the Chromebook
+# Checks to do by hand on the Chromebook
 
 Do these in order. Note anything that differs from "Expect".
 
-1. **Linux is on.** Settings → About ChromeOS → Developers → Linux development
-   environment. Turn it on if it is off.
-2. **Put the folder in place.** Extract the zip into *Linux files* so the path
-   is `Linux files/larder`.
-3. **Start.** Open Terminal and run:
+## Phase 1a
+
+1. **Put the new folder in place.** Extract the zip and move the
+   `foodforthought` folder into *Linux files*.
+2. **Start.** In Terminal:
    ```
-   cd ~/larder
+   cd foodforthought
    bash start.sh
    ```
-   Expect: a setup message on the first run (it may install `python3-venv`),
-   then `Open http://localhost:8765 in Chrome`. Note how long the first run
-   takes.
-4. **Browser.** Expect Chrome to open the page by itself. If it does not, open
-   <http://localhost:8765> by hand and note that it did not open.
-5. **Setup.** Try a password under 12 characters (expect a refusal), then set a
-   real one. Expect the Home page showing `Encrypted (SQLCipher 4.x)`.
-6. **Lock and unlock.** Click *Lock*. Enter a wrong password (expect "Wrong
-   password"), then the right one. Note roughly how long unlocking takes; it
-   should be under two seconds.
-7. **Auto-lock.** Settings → set auto-lock to 1 minute. Leave the Chromebook
-   untouched. Expect the page to switch to the lock screen within about 70
-   seconds. Unlock, then keep typing in a password box for 90 seconds without
-   submitting: expect it to stay unlocked.
-8. **Backup to USB.** Home → *Download encrypted backup*. Expect a
-   `.larderbackup` file in Downloads. Copy it to a USB stick with the Files app.
-9. **Activity log.** Expect entries for setup, lock, unlock_failed, unlock,
-   settings_changed and backup_created.
-10. **Restore.** Settings → set auto-lock to 5 minutes. Then Settings →
-    *Restore from a backup* → pick the file on the USB stick → enter the
-    password. Expect the lock screen with "Backup restored". Unlock: auto-lock
-    should be back to 1 minute, the activity log should end with a restore
-    entry, and Settings should offer *Delete safety copy*. Delete it.
-11. **Survives a restart.** Press Ctrl+C in Terminal, run `bash start.sh` again.
-    Expect the unlock page (not setup) and it should start within a few seconds
-    with no downloading. Repeat after restarting the Chromebook, with Wi-Fi off.
-12. **Encrypted at rest.** In a second Terminal tab:
-    ```
-    head -c 15 ~/.local/share/larder/larder.db; echo
-    ```
-    Expect unreadable characters, not the words `SQLite format 3`.
-13. **Not reachable from other devices.** From a phone on the same Wi-Fi, try
-    the Chromebook's IP address with `:8765`. Expect no connection.
+   Expect the one-off setup message again (it is a new folder), then
+   `Open http://localhost:8765 in Chrome`.
+3. **Existing data carried over.** Expect the unlock page, not setup, and the
+   password from before should work. The old `larder` folder in *Linux files*
+   can then be deleted.
+4. **Clock.** Home shows "Today" with the right date. If it is a day out near
+   midnight, tell me: the Linux clock is in a different time zone.
+5. **Add a client.** Clients → New client. Expect the date of birth box to show
+   day/month/year. Fill in Allergies. Expect the allergy note at the top of the
+   record on every tab.
+6. **Search.** Add a second client, then type part of a name in the search
+   box. Expect the list to narrow while typing, without pressing Enter.
+7. **Consent and files.** Record a consent. Add a photo taken on a phone.
+   *View* should open it in a new tab. *Download* should save it to Downloads.
+8. **Diary.** Add an appointment for a client. Add a repeating one (every
+   week, 4 in total) and check the next weeks. Add one that overlaps and expect
+   the overlap notice. Open an appointment and set it to Completed.
+9. **Calendar export.** Diary → Download .ics file. Optional: import it into a
+   test calendar and check the times are right and names appear as initials.
+10. **Session note.** Open a client → Notes → New note → start from *Initial
+    consultation*. Save. Expect it on the Notes tab and under "Latest note" on
+    Overview.
+11. **Build a form.** Templates and forms → New form. Add a short answer, a
+    "Choose any" with three choices, and a heading. Move one up. Save.
+12. **Print.** Preview and print → Print blank copy. Expect a clean page with
+    no menu bar or buttons in the print preview.
+13. **Fill in a form.** Client → Forms → choose the form → Start. Save, then
+    edit an answer.
+14. **Backup covers the records.** Download an encrypted backup. Add a
+    throwaway client. Restore the backup. Expect the throwaway client to be
+    gone and everything else present, including the photo.
+15. **Auto-lock on a record.** Set auto-lock to 1 minute, open a client and
+    wait. Expect the lock screen. Unlock and set it back to 10.
+16. **Activity log.** Expect a line for each thing done above, with the client
+    named but no clinical content in the Detail column.
+
+## Phase 0 (already done once; repeat only after reinstalling)
+
+1. A password under 12 characters is refused at setup.
+2. A wrong password shows "Wrong password"; five in a row adds a wait.
+3. After Ctrl+C and `bash start.sh`, expect the unlock page with nothing
+   downloaded, also with Wi-Fi off.
+4. The database is unreadable on disk:
+   ```
+   head -c 15 .local/share/foodforthought/records.db; echo
+   ```
+   Run that from a fresh Terminal window. Expect unreadable characters, not
+   the words `SQLite format 3`.
+5. From a phone on the same Wi-Fi, the Chromebook's IP address with `:8765`
+   should not connect.

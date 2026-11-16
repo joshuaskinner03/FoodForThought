@@ -42,4 +42,4 @@ if [ ! -f .venv/.installed ] || [ pyproject.toml -nt .venv/.installed ]; then
   touch .venv/.installed
 fi
 
-exec .venv/bin/python -m larder "$@"
+exec .venv/bin/python -m foodforthought "$@"

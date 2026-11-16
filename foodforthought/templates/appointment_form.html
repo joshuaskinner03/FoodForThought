@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ "Appointment" if appointment else "New appointment" }} · FoodForThought{% endblock %}
+{% block content %}
+<h1>{{ "Appointment" if appointment else "New appointment" }}</h1>
+{% if appointment and appointment.series_id %}<p class="notice">Part of a repeating series. Changes here apply to this appointment only.</p>{% endif %}
+<form method="post" action="{{ '/diary/%d' % appointment.id if appointment else '/diary/new' }}">
+  <section class="card">
+    <div class="grid">
+      <div class="field">
+        <label for="client_id">Client</label>
+        <select id="client_id" name="client_id">
+          <option value="">No client (blocked time)</option>
+          {% for c in clients %}<option value="{{ c.id }}"{% if values.client_id == c.id %} selected{% endif %}>{{ c.last_name }}, {{ c.first_name }}</option>{% endfor %}
+          {% if appointment and appointment.client_id and appointment.client_id not in clients|map(attribute="id")|list %}<option value="{{ appointment.client_id }}" selected>{{ appointment.client_name }} (archived)</option>{% endif %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="title">Type or title</label>
+        <input id="title" name="title" list="titles" value="{{ values.title or '' }}">
+        <datalist id="titles">{% for t in titles %}<option value="{{ t }}">{% endfor %}</datalist>
+      </div>
+      <div class="field"><label for="date">Date</label><input id="date" name="date" type="date" value="{{ values.date }}" required></div>
+      <div class="field"><label for="start_time">Start time</label><input id="start_time" name="start_time" type="time" value="{{ values.start_time }}" required></div>
+      <div class="field"><label for="duration_minutes">Length in minutes</label><input id="duration_minutes" name="duration_minutes" type="number" min="5" max="720" step="5" value="{{ values.duration_minutes }}" required></div>
+      <div class="field"><label for="location">Location</label><input id="location" name="location" value="{{ values.location or '' }}"></div>
+      <div class="field">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+          {% for value, label in statuses %}<option value="{{ value }}"{% if values.status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      {% if not appointment %}
+      <div class="field">
+        <label for="repeat">Repeat</label>
+        <select id="repeat" name="repeat">
+          {% for value, label in repeats %}<option value="{{ value }}"{% if values.repeat == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="count">Appointments in total, if repeating</label>
+        <input id="count" name="count" type="number" min="2" max="{{ max_occurrences }}" value="{{ values.count }}">
+      </div>
+      {% endif %}
+      <div class="field wide">
+        <label for="notes">Diary note</label>
+        <textarea id="notes" name="notes" rows="3">{{ values.notes or '' }}</textarea>
+        <p class="hint">For practical details only. Session notes go in the client's record.</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit">{{ "Save changes" if appointment else "Add to diary" }}</button>
+      <a href="/diary?week={{ values.date }}">Cancel</a>
+    </div>
+  </section>
+</form>
+{% if appointment %}
+<section class="card">
+  <h2>More</h2>
+  {% if appointment.client_id %}
+  <p><a href="/clients/{{ appointment.client_id }}/notes/new?appointment={{ appointment.id }}">Write a session note for this appointment</a> &middot; <a href="/clients/{{ appointment.client_id }}">Open {{ appointment.client_name }}'s record</a></p>
+  {% endif %}
+  <div class="actions">
+    <form method="post" action="/diary/{{ appointment.id }}/delete">
+      <input type="hidden" name="scope" value="one">
+      <button class="danger" type="submit" data-confirm="Delete this appointment? Use the Cancelled status to keep a record of it.">Delete this appointment</button>
+    </form>
+    {% if appointment.series_id %}
+    <form method="post" action="/diary/{{ appointment.id }}/delete">
+      <input type="hidden" name="scope" value="following">
+      <button class="danger" type="submit" data-confirm="Delete this appointment and every later one in the series?">Delete this and all later ones in the series</button>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

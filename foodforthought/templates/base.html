@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"historyCacheSize":0}'>
+  <title>{% block title %}FoodForThought{% endblock %}</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/app.css">
+  {% if authed %}<script src="/static/vendor/htmx.min.js" defer></script>{% endif %}
+  <script src="/static/app.js" defer></script>
+</head>
+<body data-authed="{{ '1' if authed else '0' }}">
+  <header class="bar">
+    <a class="brand" href="/">FoodForThought</a>
+    {% if authed %}
+    <nav>
+      <a href="/"{% if section == '' %} class="here"{% endif %}>Home</a>
+      <a href="/clients"{% if section == 'clients' %} class="here"{% endif %}>Clients</a>
+      <a href="/diary"{% if section == 'diary' %} class="here"{% endif %}>Diary</a>
+      <a href="/library"{% if section == 'library' %} class="here"{% endif %}>Templates and forms</a>
+      <a href="/settings"{% if section == 'settings' %} class="here"{% endif %}>Settings</a>
+      <a href="/audit"{% if section == 'audit' %} class="here"{% endif %}>Activity log</a>
+    </nav>
+    <form method="post" action="/lock"><button class="quiet" type="submit">Lock</button></form>
+    {% endif %}
+  </header>
+  <main class="{% block main_class %}{% endblock %}">
+    {% if message %}<p class="notice">{{ message }}</p>{% endif %}
+    {% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer>FoodForThought {{ version }} &middot; everything stays on this device</footer>
+</body>
+</html>

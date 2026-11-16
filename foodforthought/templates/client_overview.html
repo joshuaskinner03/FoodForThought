@@ -1,0 +1,37 @@
+{% extends "client_base.html" %}
+{% from "_macros.html" import text_block %}
+{% block tab %}
+<section class="card">
+  <h2>Contact</h2>
+  <dl class="facts">
+    <dt>Phone</dt><dd>{{ client.phone or "Not recorded" }}</dd>
+    <dt>Email</dt><dd>{{ client.email or "Not recorded" }}</dd>
+    <dt>Address</dt><dd class="pre">{{ client.address or "Not recorded" }}</dd>
+    <dt>Sex</dt><dd>{{ sex_label[client.sex] }}</dd>
+    <dt>GP</dt><dd class="pre">{{ (client.gp_name ~ "\n" ~ client.gp_address).strip() or "Not recorded" }}</dd>
+  </dl>
+</section>
+<section class="card">
+  <h2>Health and goals</h2>
+  {{ text_block("Goals", client.goals) }}
+  {{ text_block("Medical history", client.medical_history) }}
+  {{ text_block("Medications and supplements", client.medications) }}
+</section>
+<section class="card">
+  <h2>At a glance</h2>
+  <dl class="facts">
+    <dt>Next appointment</dt>
+    <dd>{% if upcoming %}<a href="/diary/{{ upcoming.id }}">{{ upcoming.date|long_date }} at {{ upcoming.start_time }}</a>{% else %}None booked. <a href="/diary/new?client={{ client.id }}">Book one</a>{% endif %}</dd>
+    <dt>Latest note</dt>
+    <dd>{% if latest_note %}<a href="/clients/{{ client.id }}/notes#note-{{ latest_note.id }}">{{ latest_note.note_date|nice_date }}{% if latest_note.title %}: {{ latest_note.title }}{% endif %}</a>{% else %}None yet. <a href="/clients/{{ client.id }}/notes/new">Write one</a>{% endif %}</dd>
+  </dl>
+</section>
+<form class="aside" method="post" action="/clients/{{ client.id }}/archive">
+  {% if client.archived %}
+  <input type="hidden" name="restore" value="1">
+  <button class="quiet" type="submit">Restore to active clients</button>
+  {% else %}
+  <button class="quiet" type="submit" data-confirm="Archive this client? Their records are kept and can be restored.">Archive client</button>
+  {% endif %}
+</form>
+{% endblock %}

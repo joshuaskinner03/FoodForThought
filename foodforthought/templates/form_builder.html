@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ form.name }} · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Edit form</h1>
+  <a class="button quiet" href="/library/forms/{{ form.id }}/preview">Preview and print</a>
+</div>
+<form method="post" action="/library/forms/{{ form.id }}">
+  <input type="hidden" name="count" value="{{ form.fields|length }}">
+  <section class="card">
+    <div class="grid">
+      <div class="field"><label for="name">Name</label><input id="name" name="name" value="{{ form.name }}" required></div>
+      <div class="field">
+        <label for="kind">Kind</label>
+        <select id="kind" name="kind">{% for value, label in kinds %}<option value="{{ value }}"{% if form.kind == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      </div>
+      <div class="field wide"><label for="description">Introduction shown at the top</label><textarea id="description" name="description" rows="2">{{ form.description }}</textarea></div>
+    </div>
+  </section>
+  <section class="card" id="fields">
+    <h2>Questions</h2>
+    <p class="hint">Forms already filled in for clients keep the questions they had at the time.</p>
+    {% for f in form.fields %}
+    <div class="builder-row">
+      <input type="hidden" name="f{{ loop.index0 }}_id" value="{{ f.id }}">
+      <div class="grid">
+        <div class="field">
+          <label for="f{{ loop.index0 }}_label">{{ "Heading" if f.type == "heading" else "Question %d" % loop.index }}</label>
+          <input id="f{{ loop.index0 }}_label" name="f{{ loop.index0 }}_label" value="{{ f.label }}">
+        </div>
+        <div class="field">
+          <label for="f{{ loop.index0 }}_type">Answer type</label>
+          <select id="f{{ loop.index0 }}_type" name="f{{ loop.index0 }}_type" data-options-for="f{{ loop.index0 }}_options_field">
+            {% for value, label in field_types %}<option value="{{ value }}"{% if f.type == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field wide" id="f{{ loop.index0 }}_options_field"{% if f.type not in ("choice", "multi") %} hidden{% endif %}>
+          <label for="f{{ loop.index0 }}_options">Choices, one per line</label>
+          <textarea id="f{{ loop.index0 }}_options" name="f{{ loop.index0 }}_options" rows="4">{{ f.options|join("\n") }}</textarea>
+        </div>
+      </div>
+      <div class="builder-actions">
+        {% if f.type != "heading" %}<label class="option"><input type="checkbox" name="f{{ loop.index0 }}_required"{% if f.required %} checked{% endif %}> Must be answered</label>{% endif %}
+        <span class="row-actions">
+          <button class="link" type="submit" name="action" value="up:{{ loop.index0 }}"{% if loop.first %} disabled{% endif %}>Move up</button>
+          <button class="link" type="submit" name="action" value="down:{{ loop.index0 }}"{% if loop.last %} disabled{% endif %}>Move down</button>
+          <button class="link danger-text" type="submit" name="action" value="remove:{{ loop.index0 }}">Remove</button>
+        </span>
+      </div>
+    </div>
+    {% else %}
+    <p class="muted">No questions yet. Add the first one below.</p>
+    {% endfor %}
+    <div class="builder-add" id="add">
+      <label for="new_type">Add a</label>
+      <select id="new_type" name="new_type">{% for value, label in field_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+      <button class="quiet" type="submit" name="action" value="add">Add</button>
+    </div>
+  </section>
+  <div class="actions">
+    <button type="submit" name="action" value="save">Save form</button>
+    <a href="/library">Back to templates and forms</a>
+  </div>
+</form>
+{% endblock %}
