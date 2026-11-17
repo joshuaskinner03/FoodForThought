@@ -1,0 +1,49 @@
+{% extends "client_base.html" %}
+{% block tab %}
+<div class="card-head">
+  <div>
+    <h2>{{ diary.title }}</h2>
+    <p class="muted sub">{{ diary.source_label }} &middot; from {{ diary.start_date|nice_date }}, {{ diary.days }} day{{ "" if diary.days == 1 else "s" }}</p>
+  </div>
+  <span class="row-actions">
+    <a href="/diaries/{{ diary.id }}/settings">Diary details</a>
+    {% if counts.pending %}<a class="button small" href="/diaries/{{ diary.id }}/review">Review {{ counts.pending }} matches</a>
+    {% else %}<a class="button small" href="/diaries/{{ diary.id }}/analysis">Analysis</a>{% endif %}
+  </span>
+</div>
+<div class="diary-layout">
+  <aside class="photo-panel" aria-label="Diary photo">
+    {% if photo %}
+    <a href="/clients/{{ client.id }}/attachments/{{ photo.id }}?view=1" target="_blank" rel="noopener" title="Open full size in a new tab">
+      <img src="/clients/{{ client.id }}/attachments/{{ photo.id }}?view=1" alt="{{ photo.description or photo.filename }}">
+    </a>
+    <p class="hint">{{ photo.filename }}. Click to open full size.</p>
+    {% else %}
+    <p class="muted">No photo of this diary yet.</p>
+    {% endif %}
+    {% if pages|length > 1 %}
+    <p class="chips">Page:
+      {% for image in pages %}<a href="/diaries/{{ diary.id }}?photo={{ image.id }}" title="{{ image.filename }}"{% if photo and image.id == photo.id %} class="here"{% endif %}>{{ loop.index }}</a>{% endfor %}
+    </p>
+    {% endif %}
+    {% if other_images %}
+    <p class="chips">Other images in the client's files:
+      {% for image in other_images %}<a href="/diaries/{{ diary.id }}?photo={{ image.id }}"{% if photo and image.id == photo.id %} class="here"{% endif %}>{{ image.filename }}</a>{% endfor %}
+    </p>
+    {% endif %}
+    {% if pdfs %}
+    <p class="hint">PDF scans open from the client's files:
+      {% for pdf in pdfs %}<a href="/clients/{{ client.id }}/attachments/{{ pdf.id }}">{{ pdf.filename }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+    </p>
+    {% endif %}
+    <form method="post" action="/diaries/{{ diary.id }}/photo" enctype="multipart/form-data" class="photo-upload">
+      <label for="photo-file">Add a photo or scan (JPEG or PNG; iPhone HEIC photos must be saved as JPEG first)</label>
+      <input id="photo-file" name="file" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required>
+      <button class="quiet small" type="submit">Add photo</button>
+    </form>
+  </aside>
+  <div class="entry-column">
+    {% include "_entry_panel.html" %}
+  </div>
+</div>
+{% endblock %}

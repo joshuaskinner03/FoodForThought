@@ -33,6 +33,7 @@ MESSAGES = {
     "erased": "The client's record has been erased.",
     "logo-saved": "Logo saved.",
     "imported": "Food database imported. Check the report below.",
+    "diary-imported": "Diary imported. Check each food match below, then confirm it or skip it.",
     "series-clash": "Saved the repeat appointments. Note: at least one overlaps another appointment.",
 }
 
@@ -45,6 +46,8 @@ ERRORS = {
     "has-payments": "Delete the payments on this invoice before voiding it.",
     "payment": "Give a valid date and an amount above zero.",
     "portion": "Give the portion a name and a weight in grams above zero.",
+    "diary-days": "Give a valid first day and between 1 and 14 days.",
+    "entry": "Choose a food and a day, and give an amount above zero.",
     "erase-name": "The name typed did not match, so nothing was erased.",
 }
 

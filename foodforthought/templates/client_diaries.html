@@ -1,0 +1,68 @@
+{% extends "client_base.html" %}
+{% from "_macros.html" import date_input %}
+{% block tab %}
+<section class="card">
+  <h2>Food diaries</h2>
+  {% if diaries %}
+  <table>
+    <thead><tr><th>Diary</th><th>Dates</th><th>How it came in</th><th>Entries</th><th></th></tr></thead>
+    <tbody>
+      {% for d in diaries %}
+      <tr>
+        <td><a href="/diaries/{{ d.id }}">{{ d.title }}</a>{% if d.life_stage %} <span class="badge">{{ "Pregnant" if d.life_stage.startswith("pregnant") else "Breastfeeding" }}</span>{% endif %}</td>
+        <td>{{ d.start_date|nice_date }}{% if d.days > 1 %} to {{ d.end_date|nice_date }}{% endif %}</td>
+        <td>{{ d.source_label }}</td>
+        <td>{{ d.counts.confirmed }}{% if d.counts.pending %} <span class="badge unpaid">{{ d.counts.pending }} to review</span>{% endif %}</td>
+        <td class="row-actions">
+          {% if d.counts.pending %}<a href="/diaries/{{ d.id }}/review">Review matches</a>{% else %}<a href="/diaries/{{ d.id }}/analysis">Analysis</a>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No food diaries yet. Start one below.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Type in a diary</h2>
+  <p class="hint">For a paper diary. Add a photo of it on the next page and type the foods in beside it.</p>
+  <form method="post" action="/clients/{{ client.id }}/diaries/new">
+    <div class="grid three">
+      <div class="field"><label for="title">Name</label><input id="title" name="title" value="Food diary"></div>
+      {{ date_input("First day", "start_date", today, required=true) }}
+      <div class="field"><label for="days">Number of days</label><input id="days" name="days" type="number" min="1" max="14" value="3" required></div>
+    </div>
+    <button type="submit">Start typing in</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Send a diary template</h2>
+  <p class="hint">Downloads a spreadsheet for the client to fill in, with a page of instructions. It has no name or other details in it. Send it by email, then import it below when it comes back.</p>
+  <form method="get" action="/clients/{{ client.id }}/diaries/template">
+    <div class="grid">
+      {{ date_input("First day", "start", next_monday, required=true) }}
+      <div class="field"><label for="template_days">Number of days</label><input id="template_days" name="days" type="number" min="1" max="14" value="3" required></div>
+    </div>
+    <button type="submit">Download template</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Import a diary</h2>
+  <p>The file type is recognised automatically:</p>
+  <ul>
+    {% for importer in importers %}<li><strong>{{ importer.label }}:</strong> {{ importer.help }}</li>{% endfor %}
+  </ul>
+  <p class="hint">Every food is matched against the food database. You check each match before the diary can be analysed, and the app remembers your choices for next time.</p>
+  <form method="post" action="/clients/{{ client.id }}/diaries/import" enctype="multipart/form-data">
+    <div class="grid">
+      <div class="field"><label for="file">File</label><input id="file" name="file" type="file" accept=".xlsx,.csv" required></div>
+      <div class="field"><label for="import_title">Name (optional)</label><input id="import_title" name="title"></div>
+    </div>
+    <button type="submit">Import</button>
+  </form>
+</section>
+{% endblock %}

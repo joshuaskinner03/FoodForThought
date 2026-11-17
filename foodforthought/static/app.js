@@ -18,6 +18,40 @@
     try { picker.showPicker(); } catch (err) { /* typing the date still works */ }
   });
 
+  let pickWhenReady = null;
+
+  const pickFirst = (input) => {
+    const list = document.querySelector(input.dataset.pickFirst);
+    if (!list || list.dataset.q !== input.value.trim()) return false;
+    const first = list.querySelector(".choice");
+    if (first) first.click();
+    return true;
+  };
+
+  document.addEventListener("keydown", (event) => {
+    const input = event.target;
+    if (!input.dataset || !input.dataset.pickFirst || event.key !== "Enter") return;
+    event.preventDefault();
+    if (!input.value.trim() || pickFirst(input)) return;
+    pickWhenReady = input;
+    if (window.htmx) window.htmx.trigger(input, "search");
+  });
+
+  document.addEventListener("input", (event) => {
+    if (event.target === pickWhenReady) pickWhenReady = null;
+  });
+
+  document.addEventListener("htmx:afterSettle", () => {
+    if (!pickWhenReady) return;
+    const input = pickWhenReady;
+    if (pickFirst(input) || !input.isConnected) pickWhenReady = null;
+  });
+
+  document.addEventListener("htmx:afterSwap", () => {
+    const field = document.querySelector("#entry-form [autofocus]");
+    if (field && document.activeElement !== field) field.focus();
+  });
+
   document.addEventListener("change", (event) => {
     if (event.target.classList.contains("date-picker") && event.target.value) {
       const [year, month, day] = event.target.value.split("-");

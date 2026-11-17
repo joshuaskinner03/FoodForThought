@@ -1,0 +1,26 @@
+{% extends "client_base.html" %}
+{% from "_macros.html" import date_input %}
+{% block tab %}
+<section class="card">
+  <h2>Diary details</h2>
+  <form method="post">
+    <div class="grid">
+      <div class="field"><label for="title">Name</label><input id="title" name="title" value="{{ diary.title }}" required></div>
+      {{ date_input("First day", "start_date", diary.start_date, required=true) }}
+      <div class="field"><label for="days">Number of days</label><input id="days" name="days" type="number" min="1" max="{{ max_days }}" value="{{ diary.days }}" required></div>
+      {% if client.sex == "female" %}
+      <div class="field">
+        <label for="life_stage">When this diary was kept</label>
+        <select id="life_stage" name="life_stage">{% for value, label in life_stages %}<option value="{{ value }}"{% if diary.life_stage == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <p class="hint">Changes the reference values used in the analysis.</p>
+      </div>
+      {% endif %}
+      <div class="field wide"><label for="notes">Notes</label><textarea id="notes" name="notes" rows="3">{{ diary.notes }}</textarea></div>
+    </div>
+    <div class="actions"><button type="submit">Save</button><a href="/diaries/{{ diary.id }}">Cancel</a></div>
+  </form>
+</section>
+<form class="aside" method="post" action="/diaries/{{ diary.id }}/delete">
+  <button class="link danger-text" type="submit" data-confirm="Delete this diary and all its entries? Photos stay in the client's files.">Delete this diary</button>
+</form>
+{% endblock %}

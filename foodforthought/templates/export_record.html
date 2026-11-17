@@ -82,6 +82,18 @@ article { margin: 1rem 0; padding-bottom: 0.6rem; border-bottom: 1px solid #e3e3
 </table>
 {% else %}<p class="muted">None.</p>{% endif %}
 
+<h2>Food diaries</h2>
+{% for item in record.food_diaries %}
+<article>
+  <h3>{{ item.title }}, from {{ item.start_date|nice_date }} ({{ item.days }} days)</h3>
+  {% if item.notes %}<p class="pre">{{ item.notes }}</p>{% endif %}
+  <table>
+    <tr><th>Day</th><th>Meal</th><th>Food</th><th>Weight, g</th><th>As written</th></tr>
+    {% for entry in item.entries %}<tr><td>{{ entry.day|nice_date }}</td><td>{{ entry.meal }}</td><td>{{ entry.food or "" }}{% if entry.status != "confirmed" %} ({{ entry.status }}){% endif %}</td><td>{{ entry.grams|number }}</td><td>{{ entry.source_text }} {{ entry.source_amount }}</td></tr>{% endfor %}
+  </table>
+</article>
+{% else %}<p class="muted">None.</p>{% endfor %}
+
 <h2>Letters</h2>
 {% for item in record.letters %}
 <article><h3>{{ item.letter_date|nice_date }}{% if item.subject %}: {{ item.subject }}{% endif %}</h3><p class="muted pre">To: {{ item.recipient_name }}

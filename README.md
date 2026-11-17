@@ -3,11 +3,11 @@
 Free, open-source, local-only practice management for a private nutritionist.
 One user, one device, no cloud.
 
-**Status: Phase 2, step 1 of 3.** Working now: everything in Phase 1 (client
+**Status: Phase 2, step 2 of 3.** Working now: everything in Phase 1 (client
 records, diary, notes, forms, consent, files, measurements, invoices, letters,
-export and erasure, backup), plus the food database and energy and
-macronutrient targets. Still to come: food diaries and analysis (step 2),
-recipes and meal plans (step 3), and optional local AI drafting (Phase 3).
+export and erasure, backup), the food database, energy and macronutrient
+targets, and food diaries with intake analysis. Still to come: recipes and
+meal plans (step 3), and optional local AI drafting (Phase 3).
 
 ## Run it
 
@@ -19,6 +19,14 @@ bash start.sh
 ```
 
 Windows: double-click `start.bat`.
+
+To update, stop the app (Ctrl+C), then:
+
+```
+cd foodforthought
+git pull
+bash start.sh
+```
 
 The first run creates a private Python environment in `.venv` and downloads the
 dependencies. After that it starts offline. The app opens at
@@ -75,6 +83,11 @@ restore.
 - **Targets:** basal metabolic rate from Henry (2005) or Mifflin-St Jeor
   (1990), an activity factor, an adjustment in kcal, then protein, fat and
   carbohydrate targets. Each set is kept with the figures it was based on.
+- **Food diaries:** typed in beside a photo of a paper diary, sent to the
+  client as a spreadsheet template and imported back, or imported from a
+  Cronometer export. Imported foods are matched to the food tables and each
+  match is checked before the diary can be analysed. The analysis compares
+  average daily intake with UK reference values (see below).
 - **Dates** are typed and shown as day/month/year whatever language Chrome is
   set to.
 
@@ -99,6 +112,62 @@ Importing again updates foods in place, so saved portions and anything that
 refers to a food are kept. CoFID has no portion sizes, so portions are your
 own. Source: McCance and Widdowson's The Composition of Foods Integrated
 Dataset 2021, Public Health England, under the Open Government Licence v3.0.
+
+### Food diaries and analysis
+
+Three ways in, from a client's *Food diaries* tab:
+
+- **Type in a diary.** Add a photo or scan of the paper diary; it stays beside
+  the entry form. Type part of a food's name, press Enter to take the top
+  result, type the weight or pick a saved portion, press Enter. The day and
+  meal stay set for the next food.
+- **Send a diary template.** Downloads a spreadsheet with the dates filled in,
+  drop-down lists for meal and unit, and a page of instructions. It holds no
+  client details. Import it when it comes back.
+- **Import a Cronometer export.** In Cronometer: More → Account → Account
+  Data → Export Data → Export Food & Recipe Entries, for the diary dates. Only
+  the food names, amounts, meals and dates are used. Cronometer's own nutrient
+  figures are ignored and the foods are matched to CoFID like any other import.
+
+Each imported line is matched by its words against food names. The best
+suggestions are listed with a match score; one is preselected only when the
+score is 60% or more or the same words have been confirmed before. Weights are
+taken from grams, kilograms, ounces and pounds as given, millilitres as grams
+(flagged), a weight written on the pack ("1 x 30g bar"), or a saved portion
+whose name contains the unit ("slice", "glass"). Anything else needs a weight
+typed in, and that weight can be saved as a new portion for next time. Each
+confirmed match is remembered, so the next diary with the same words is
+matched straight away and can be confirmed in one go.
+
+The analysis needs every line confirmed or skipped. It averages over the days
+with food recorded, and lists any empty days. Fewer than 3 days gives a
+warning.
+
+- Energy, protein, fat, saturates, carbohydrate, total sugars, fibre and salt
+  (sodium x 2.5). Fat and saturates are shown as a percentage of food energy
+  (excluding alcohol), carbohydrate and sugars of total energy, as in the UK
+  guidance. Compared with the client's latest targets, if set, and with the
+  guidance: fat no more than 35% and saturates no more than 11% (from age 4),
+  carbohydrate at least 50% (from age 2), fibre and salt by age, protein
+  against the RNI (0.75 g per kg for adults when a weight is recorded).
+- Vitamins and minerals against the RNI and LRNI for the client's sex and age
+  on the first diary day, with the increases for pregnancy and breastfeeding
+  set in the diary's details. Below the LRNI is shown as "low intake: below
+  the LRNI", between the two as "below the RNI". A diary cannot show a
+  deficiency, and the page says so.
+- Where foods have no value for a nutrient, the average is a minimum and
+  carries an asterisk. If those foods carry more than 20% of the energy, a low
+  intake is not flagged for that nutrient.
+
+Reference values: Public Health England, Government Dietary Recommendations
+(2016) for RNIs, fibre and salt; Department of Health, Dietary Reference
+Values (COMA, 1991) for LRNIs and the pregnancy and breastfeeding increments.
+Thiamin, niacin and vitamin B6 LRNIs are scaled from the RNI by the COMA
+ratios. LRNIs for calcium and phosphorus at 11 to 18 and magnesium at 11 to 14
+are left out because the published figures could not be confirmed. CoFID
+cannot separate free sugars from total sugars. Supplements are not counted.
+The tables are in `foodforthought/reference.py` and the arithmetic is checked
+in `tests/test_food_diaries.py`.
 
 ### Energy equations
 
@@ -133,13 +202,16 @@ wide margin of error, developed on adults.
 ### Export and erasure
 
 *Export* makes an unencrypted zip of one client's whole record: a page to read,
-the same information as JSON, and their files.
+the same information as JSON, and their files. Food diaries are included,
+with what the client wrote beside each matched food.
 
 *Erase* removes the client and everything attached to them. Issued and voided
 invoices are kept, with the name and address printed on them and their
 payments, as financial records, and are no longer linked to a client. The
 activity log keeps its entries for the erased record, which hold record numbers
-only. Backups made earlier still contain the record until they are replaced.
+only. Remembered food matches made only from this client's diaries are deleted;
+matches also confirmed for another client are kept, as they hold no client
+details. Backups made earlier still contain the record until they are replaced.
 How long financial records must be kept is for the practitioner to decide with
 their accountant.
 

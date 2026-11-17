@@ -1,0 +1,33 @@
+<div id="entry-panel">
+  {% if error and request.headers.get("hx-request") %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
+  {% include "_entry_form.html" %}
+  {% for day in day_groups %}
+  <section class="card day-entries">
+    <div class="card-head">
+      <h3>{{ day.label }}</h3>
+      <span class="muted">{{ day.kcal|number(0) }} kcal</span>
+    </div>
+    {% for meal, items in day.meals %}
+    <h4>{{ meal }}</h4>
+    <ul class="entries">
+      {% for e in items %}
+      <li{% if e.status != "confirmed" %} class="faded"{% endif %}>
+        <div>{{ e.food_name or e.source_text }}{% if e.status == "pending" %} <span class="badge unpaid">To review</span>{% elif e.status == "skipped" %} <span class="badge cancelled">Skipped</span>{% endif %}</div>
+        <div class="entry-meta">
+          <span class="muted">{{ e.label }}{% if e.kcal is not none %} &middot; {{ e.kcal|number(0) }} kcal{% endif %}</span>
+          <span class="row-actions">
+            {% if e.status == "confirmed" %}<a href="/diaries/{{ diary.id }}/entries/{{ e.id }}/edit">Edit</a>{% endif %}
+            <form method="post" action="/diaries/{{ diary.id }}/entries/{{ e.id }}/delete" hx-post="/diaries/{{ diary.id }}/entries/{{ e.id }}/delete" hx-target="#entry-panel" hx-swap="outerHTML">
+              <button class="link danger-text" type="submit" aria-label="Remove {{ e.food_name or e.source_text }}">Remove</button>
+            </form>
+          </span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endfor %}
+  </section>
+  {% else %}
+  <p class="muted">Nothing entered yet.</p>
+  {% endfor %}
+</div>

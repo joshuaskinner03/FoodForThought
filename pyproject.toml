@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "foodforthought"
-version = "0.3.1"
+version = "0.4.0"
 description = "Local-only practice management for a private nutritionist"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,6 +22,7 @@ dependencies = [
     "pillow>=10",
     "openpyxl>=3.1",
     "defusedxml>=0.7",
+    "rapidfuzz>=3",
     "sqlcipher3-binary>=0.5.4; sys_platform == 'linux' and platform_machine == 'x86_64'",
     "sqlcipher3-wheels>=0.5.4; sys_platform != 'linux' or platform_machine != 'x86_64'",
 ]

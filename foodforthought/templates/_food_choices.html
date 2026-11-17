@@ -1,0 +1,11 @@
+<div class="choice-list" data-q="{{ q|trim }}">
+{% for f in choices %}
+<a class="choice" href="/diaries/{{ diary.id }}?food={{ f.id }}&amp;day={{ day|urlencode }}&amp;meal={{ meal|urlencode }}"
+   hx-get="/diaries/{{ diary.id }}/entry-form?food={{ f.id }}" hx-include="#entry-day, #entry-meal" hx-target="#entry-form" hx-swap="outerHTML">
+  <span>{{ f.name }}{% if f.custom %} <span class="badge">Mine</span>{% endif %}</span>
+  <span class="muted">{{ f.nutrients.get("energy_kcal")|number(0) }} kcal/100 g</span>
+</a>
+{% else %}
+{% if q %}<p class="muted">No foods match "{{ q }}". Try fewer or shorter words, or <a href="/foods/new" target="_blank" rel="noopener">add a food of your own</a>.</p>{% endif %}
+{% endfor %}
+</div>
