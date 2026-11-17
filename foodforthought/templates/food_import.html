@@ -22,7 +22,7 @@
     <dt>Sheets</dt>
     <dd>
       {% for sheet in report.sheets %}
-      {% if sheet.found %}"{{ sheet.found }}": {{ sheet.rows }} rows from row {{ sheet.first_data_row }}, {{ sheet.nutrients|length }} nutrient columns matched by {{ sheet.matched_by }}{% else %}<span class="warn-text">no {{ sheet.wanted }} sheet found</span>{% endif %}{% if not loop.last %}<br>{% endif %}
+      {% if sheet.found %}"{{ sheet.found }}": {{ sheet.rows }} rows from row {{ sheet.first_data_row }}, {{ sheet.nutrients|length }} nutrient columns matched by {{ sheet.matched_by }}, foods matched by {{ sheet.codes_found_by or "headings" }}{% else %}<span class="warn-text">no {{ sheet.wanted }} sheet found</span>{% endif %}{% if not loop.last %}<br>{% endif %}
       {% endfor %}
     </dd>
     <dt>Rows skipped</dt><dd>{{ report.skipped_rows }}{% if report.unreadable_cells %}, and {{ report.unreadable_cells }} cells could not be read and are treated as not known{% endif %}</dd>

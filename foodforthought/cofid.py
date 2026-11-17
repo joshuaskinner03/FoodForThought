@@ -14,7 +14,17 @@ ATTRIBUTION = (
 )
 SHEETS = ("proximates", "inorganics", "vitamins")
 HEADER_SCAN_ROWS = 12
-IDENTITY = {"food code": "code", "food name": "name", "description": "description", "group": "group"}
+IDENTITY = {
+    "foodcode": "code",
+    "code": "code",
+    "foodname": "name",
+    "name": "name",
+    "description": "description",
+    "group": "group",
+    "foodgroup": "group",
+}
+CODE_SHAPE = re.compile(r"^\d{1,3}-\d{1,4}[a-z]?$|^\d{1,6}[a-z]?$", re.IGNORECASE)
+SAMPLE_ROWS = 400
 _NUMBER = re.compile(r"^[<~]?\s*(-?\d+(?:\.\d+)?)$")
 
 
@@ -123,6 +133,16 @@ def _norm(cell) -> str:
     return " ".join(str(cell).split()).strip() if cell is not None else ""
 
 
+def _compact(cell) -> str:
+    return re.sub(r"[^a-z]", "", _norm(cell).lower())
+
+
+def _code(cell) -> str:
+    if isinstance(cell, float) and cell.is_integer():
+        cell = int(cell)
+    return _norm(cell)
+
+
 def _find_sheet(workbook, wanted: str):
     for name in workbook.sheetnames:
         lowered = name.lower()
@@ -131,7 +151,7 @@ def _find_sheet(workbook, wanted: str):
     return None
 
 
-def _layout(rows: list[tuple]) -> tuple[dict, dict, int, str]:
+def _nutrient_columns(rows: list[tuple]) -> tuple[dict, int, str]:
     best_row, best_hits, best_match, method = -1, 0, _by_code, "codes"
     for label, match in (("codes", _by_code), ("column titles", _by_label)):
         for index, row in enumerate(rows):
@@ -142,21 +162,66 @@ def _layout(rows: list[tuple]) -> tuple[dict, dict, int, str]:
             break
     if best_hits < 2:
         raise ImportProblem("could not find the nutrient columns, such as PROT, FAT and CHO")
-    nutrient_columns = {}
+    columns = {}
     for column, cell in enumerate(rows[best_row]):
         key = best_match(cell)
-        if key and key not in nutrient_columns.values():
-            nutrient_columns[column] = key
-    identity, last_header = {}, best_row
+        if key and key not in columns.values():
+            columns[column] = key
+    return columns, best_row, method
+
+
+def _headings(rows: list[tuple], skip: set[int]) -> tuple[dict, int]:
+    identity, last = {}, -1
     for index, row in enumerate(rows):
         for column, cell in enumerate(row):
-            role = IDENTITY.get(_norm(cell).lower())
-            if role and role not in identity:
+            role = IDENTITY.get(_compact(cell))
+            if role and role not in identity and column not in skip:
                 identity[role] = column
-                last_header = max(last_header, index)
-    if "code" not in identity or "name" not in identity:
-        raise ImportProblem('could not find the "Food Code" and "Food Name" columns')
-    return identity, nutrient_columns, last_header + 1, method
+                last = max(last, index)
+    return identity, last
+
+
+def _infer(rows: list[tuple], skip: set[int], known: set[str]) -> dict:
+    width = min(max((len(row) for row in rows), default=0), 15)
+    candidates = [column for column in range(width) if column not in skip]
+
+    def hits(column: int, test) -> int:
+        return sum(1 for row in rows if column < len(row) and test(row[column]))
+
+    if known:
+        def looks_like_code(cell) -> bool:
+            return _code(cell) in known
+    else:
+        def looks_like_code(cell) -> bool:
+            return bool(CODE_SHAPE.match(_code(cell)))
+
+    scored = sorted(((hits(column, looks_like_code), -column) for column in candidates), reverse=True)
+    filled = sum(1 for row in rows if any(cell not in (None, "") for cell in row))
+    if not scored or scored[0][0] < max(1 if known else 3, filled // 2):
+        return {}
+    code_hits, code_column = scored[0][0], -scored[0][1]
+    identity = {"code": code_column}
+
+    def looks_like_name(cell) -> bool:
+        text = _norm(cell)
+        return len(text) >= 3 and any(ch.isalpha() for ch in text) and not CODE_SHAPE.match(text)
+
+    for column in sorted(candidates, key=lambda c: (c < code_column, abs(c - code_column))):
+        if column != code_column and hits(column, looks_like_name) >= code_hits / 2:
+            identity["name"] = column
+            break
+    return identity
+
+
+def _preview(rows: list[tuple]) -> str:
+    shown = []
+    for row in rows:
+        cells = [_norm(cell)[:25] for cell in row[:8]]
+        if any(cells):
+            shown.append(" | ".join(cell or "(empty)" for cell in cells))
+        if len(shown) == 3:
+            break
+    return " / ".join(shown) or "nothing"
 
 
 def parse(data: bytes) -> tuple[list[ParsedFood], dict]:
@@ -168,35 +233,53 @@ def parse(data: bytes) -> tuple[list[ParsedFood], dict]:
     report: dict = {"sheets": [], "unreadable_cells": 0, "skipped_rows": 0}
     try:
         for wanted in SHEETS:
+            primary = wanted == "proximates"
             sheet = _find_sheet(workbook, wanted)
             if sheet is None:
-                if wanted == "proximates":
+                if primary:
                     raise ImportProblem(
                         'There is no "Proximates" sheet in that workbook. Is it the CoFID file from gov.uk?'
                     )
                 report["sheets"].append({"wanted": wanted, "found": ""})
                 continue
-            rows = sheet.iter_rows(values_only=True)
-            head = [row for _, row in zip(range(HEADER_SCAN_ROWS), rows)]
+            rows = list(sheet.iter_rows(values_only=True))
+            head = rows[:HEADER_SCAN_ROWS]
             try:
-                identity, nutrient_columns, first_data, method = _layout(head)
+                nutrient_columns, nutrient_row, method = _nutrient_columns(head)
             except ImportProblem as exc:
-                raise ImportProblem(f'Sheet "{sheet.title}": {exc}.') from exc
+                raise ImportProblem(f'Sheet "{sheet.title}": {exc}. The top of the sheet reads: {_preview(head)}') from exc
+            skip = set(nutrient_columns)
+            needs = ("code", "name") if primary else ("code",)
+            identity, last_heading = _headings(head, skip)
+            codes_found_by = "headings"
+            if any(role not in identity for role in needs):
+                sample = rows[nutrient_row + 1 : nutrient_row + 1 + SAMPLE_ROWS]
+                identity = _infer(sample, skip, set() if primary else set(foods))
+                last_heading, codes_found_by = -1, "matching codes"
+                if any(role not in identity for role in needs):
+                    wanted_columns = "food code and food name columns" if primary else "food code column"
+                    raise ImportProblem(
+                        f'Sheet "{sheet.title}": could not find the {wanted_columns}. '
+                        f"The top of the sheet reads: {_preview(head)}"
+                    )
+            first_data = max(nutrient_row, last_heading) + 1
             count, first_food_row = 0, None
-            for row_number, row in enumerate([*head[first_data:], *rows], first_data + 1):
+            for row_number, row in enumerate(rows[first_data:], first_data + 1):
                 def at(role: str) -> str:
                     column = identity.get(role)
                     return _norm(row[column]) if column is not None and column < len(row) else ""
 
-                code, name = at("code"), at("name")
-                if not code or not name:
+                code = _code(row[identity["code"]]) if identity["code"] < len(row) else ""
+                name = at("name")
+                if not code or (primary and not name):
                     if first_food_row and any(cell not in (None, "") for cell in row):
                         report["skipped_rows"] += 1
                     continue
                 food = foods.get(code)
                 if food is None:
-                    if wanted != "proximates":
-                        report["skipped_rows"] += 1
+                    if not primary:
+                        if first_food_row:
+                            report["skipped_rows"] += 1
                         continue
                     food = foods[code] = ParsedFood(code, name, at("description"), at("group"))
                 for column, key in nutrient_columns.items():
@@ -217,6 +300,7 @@ def parse(data: bytes) -> tuple[list[ParsedFood], dict]:
                     "found": sheet.title,
                     "first_data_row": first_food_row,
                     "matched_by": method,
+                    "codes_found_by": codes_found_by,
                     "rows": count,
                     "nutrients": sorted(nutrient_columns.values()),
                 }

@@ -84,6 +84,53 @@ def test_parse_copes_with_layout_variations(options, matched_by):
     assert "Zinc" in report["nutrients_missing"] and "Protein" not in report["nutrients_missing"]
 
 
+BLANK = [None] * 7
+
+
+@pytest.mark.parametrize(
+    "options, found_by",
+    [
+        ({"secondary_identity": BLANK}, ["headings", "matching codes", "matching codes"]),
+        ({"secondary_identity": ["Code", "Name", None, None, None, None, None]}, ["headings"] * 3),
+        ({"secondary_identity": ["Food\u200bcode", "FOOD NAME:", None, None, None, None, None]}, ["headings"] * 3),
+        ({"secondary_identity": ["Ref", "Item", None, None, None, None, None]}, ["headings", "matching codes", "matching codes"]),
+        ({"primary_identity": BLANK, "secondary_identity": BLANK}, ["matching codes"] * 3),
+        ({"numeric_codes": True, "secondary_identity": BLANK}, ["headings", "matching codes", "matching codes"]),
+        ({"numeric_codes": True}, ["headings"] * 3),
+    ],
+)
+def test_parse_finds_food_codes_without_the_usual_headings(options, found_by):
+    foods, report = parse(workbook(**options))
+    assert [sheet["codes_found_by"] for sheet in report["sheets"]] == found_by
+    by_name = {food.name: food for food in foods}
+    assert len(foods) == 5 and report["skipped_rows"] == 2
+    milk = by_name["Milk, semi-skimmed, pasteurised, average"]
+    assert milk.code == ("12001" if options.get("numeric_codes") else "12-001")
+    assert milk.nutrients["calcium"] == 120 and milk.nutrients["vitamin_b12"] == 0.9 and milk.nutrients["protein"] == 3.5
+    assert by_name["Porridge, made with water"].nutrients["iodine"] is None
+    assert [sheet["rows"] for sheet in report["sheets"]] == [5, 2, 2]
+    assert report["energy_mismatched"] == 1
+
+
+def test_failure_shows_the_top_of_the_sheet():
+    from openpyxl import Workbook
+    import io
+
+    book = Workbook()
+    book.active.title = "1.3 Proximates"
+    book.active.append(["Stuff", "More stuff", "Protein (g)", "Fat (g)"])
+    book.active.append([None, None, "PROT", "FAT"])
+    for i in range(10):
+        book.active.append(["x", "y", 1, 2])
+    out = io.BytesIO()
+    book.save(out)
+    with pytest.raises(cofid.ImportProblem) as caught:
+        parse(out.getvalue())
+    message = str(caught.value)
+    assert "food code and food name columns" in message
+    assert "The top of the sheet reads: Stuff | More stuff | Protein (g) | Fat (g) / (empty) | (empty) | PROT | FAT" in message
+
+
 def test_parse_rejects_other_files():
     from openpyxl import Workbook
     import io

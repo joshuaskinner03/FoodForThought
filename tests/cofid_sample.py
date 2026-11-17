@@ -37,11 +37,26 @@ SHEETS = {
 }
 
 
-def workbook(numbered: bool = True, code_row: int | None = 2, extra_top_rows: int = 0) -> bytes:
+def _numeric(code):
+    return int(code.replace("-", "")) if isinstance(code, str) and code.replace("-", "").isdigit() else code
+
+
+def workbook(
+    numbered: bool = True,
+    code_row: int | None = 2,
+    extra_top_rows: int = 0,
+    primary_identity: list | None = None,
+    secondary_identity: list | None = None,
+    numeric_codes: bool = False,
+) -> bytes:
     book = Workbook()
     book.active.title = "1.1 Notes" if numbered else "Notes"
     book.active.append(["McCance and Widdowson's Composition of Foods Integrated Dataset"])
     for number, (name, (labels, codes, rows)) in enumerate(SHEETS.items(), 3):
+        primary = name == "Proximates"
+        IDENTITY = (primary_identity if primary else secondary_identity) or globals()["IDENTITY"]
+        if numeric_codes:
+            rows = [[_numeric(row[0]) if primary else float(_numeric(row[0]) or 0) or row[0], *row[1:]] for row in rows]
         sheet = book.create_sheet(f"1.{number} {name}" if numbered else name)
         for _ in range(extra_top_rows):
             sheet.append(["Explanatory text"])
