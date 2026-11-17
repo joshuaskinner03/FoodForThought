@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Updates · FoodForThought{% endblock %}
+{% block content %}
+<h1>Updates</h1>
+<section class="card">
+  <p>This is version {{ about.version }}{% if about.commit %} ({{ about.commit }}, {{ about.day|nice_date }}){% endif %}.</p>
+  {% if unavailable %}
+  <p class="warn-text">{{ unavailable }}</p>
+  {% elif not job or job.state == "failed" %}
+  <p class="hint">Checking asks GitHub for a newer version of the program. Nothing about you or your clients is sent.</p>
+  <form method="post" action="/updates/check"><button type="submit">Check for updates</button></form>
+  {% endif %}
+  {% if check_error %}<p class="notice error" role="alert">Could not check: {{ check_error }}</p>{% endif %}
+</section>
+
+{% if check and not job %}
+<section class="card">
+  {% if check.behind %}
+  <h2>{{ check.behind }} update{{ "" if check.behind == 1 else "s" }} available</h2>
+  <ul>{% for subject in check.subjects %}<li>{{ subject }}</li>{% endfor %}</ul>
+  <p>Download a backup first, in case anything goes wrong. FoodForThought restarts after updating and you unlock it again.</p>
+  <div class="actions">
+    <form method="post" action="/backup"><button class="quiet" type="submit">Download encrypted backup</button></form>
+    <form method="post" action="/updates/apply"><button type="submit">Update and restart</button></form>
+  </div>
+  {% else %}
+  <p>You have the latest version.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% include "_update_status.html" %}
+{% endblock %}

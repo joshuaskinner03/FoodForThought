@@ -35,6 +35,9 @@ MESSAGES = {
     "imported": "Food database imported. Check the report below.",
     "diary-imported": "Diary imported. Check each food match below, then confirm it or skip it.",
     "series-clash": "Saved the repeat appointments. Note: at least one overlaps another appointment.",
+    "updated": "FoodForThought has been updated. Unlock to carry on.",
+    "launcher-added": "FoodForThought is now in the launcher. On a Chromebook it is in the Linux apps folder.",
+    "launcher-removed": "Removed from the launcher.",
 }
 
 ERRORS = {
