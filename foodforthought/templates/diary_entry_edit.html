@@ -1,0 +1,22 @@
+{% extends "client_base.html" %}
+{% block tab %}
+<section class="card">
+  <h2>Edit entry</h2>
+  <p><strong>{{ food.name if food else entry.source_text }}</strong>{% if entry.unit not in ("", "g") %} <span class="muted">{{ entry.quantity|plain }} × {{ entry.unit }}</span>{% endif %}</p>
+  <form method="post">
+    <div class="grid three">
+      <div class="field">
+        <label for="day">Day</label>
+        <select id="day" name="day">{% for d in days %}<option value="{{ d.value }}"{% if d.value == entry.day %} selected{% endif %}>{{ d.label }}</option>{% endfor %}</select>
+      </div>
+      <div class="field">
+        <label for="meal">Meal</label>
+        <select id="meal" name="meal">{% for m in meals %}<option value="{{ m }}"{% if m == entry.meal %} selected{% endif %}>{{ m }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label for="grams">Weight, g</label><input id="grams" name="grams" inputmode="decimal" value="{{ entry.grams|plain }}" required></div>
+    </div>
+    <p class="hint">To change the food itself, remove this entry and add the right food.</p>
+    <div class="actions"><button type="submit">Save</button><a href="/diaries/{{ diary.id }}">Cancel</a></div>
+  </form>
+</section>
+{% endblock %}

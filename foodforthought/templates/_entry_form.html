@@ -1,0 +1,44 @@
+<form id="entry-form" class="card entry-form" method="post" action="/diaries/{{ diary.id }}/entries"
+      hx-post="/diaries/{{ diary.id }}/entries" hx-target="#entry-panel" hx-swap="outerHTML">
+  <h3>Add a food</h3>
+  <div class="grid">
+    <div class="field">
+      <label for="entry-day">Day</label>
+      <select id="entry-day" name="day">{% for d in days %}<option value="{{ d.value }}"{% if d.value == day %} selected{% endif %}>{{ d.label }}</option>{% endfor %}</select>
+    </div>
+    <div class="field">
+      <label for="entry-meal">Meal</label>
+      <select id="entry-meal" name="meal">{% for m in meals %}<option value="{{ m }}"{% if m == meal %} selected{% endif %}>{{ m }}</option>{% endfor %}</select>
+    </div>
+  </div>
+  {% if chosen %}
+  <input type="hidden" name="food_id" value="{{ chosen.id }}">
+  <p class="chosen">
+    <strong>{{ chosen.name }}</strong>
+    <span class="muted">{{ chosen.nutrients.get("energy_kcal")|number(0) }} kcal per 100 g</span>
+    <a href="/diaries/{{ diary.id }}?day={{ day }}&amp;meal={{ meal }}" hx-get="/diaries/{{ diary.id }}/entry-form" hx-include="#entry-day, #entry-meal" hx-target="#entry-form" hx-swap="outerHTML">Choose another</a>
+  </p>
+  <div class="grid">
+    <div class="field"><label for="amount">Amount</label><input id="amount" name="amount" inputmode="decimal" autocomplete="off" required autofocus></div>
+    <div class="field">
+      <label for="unit">Unit</label>
+      <select id="unit" name="unit">
+        <option value="g">grams</option>
+        {% for p in portions %}<option value="portion:{{ p.id }}">{{ p.name }} ({{ p.grams|plain }} g)</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="actions">
+    <button type="submit">Add</button>
+    <a href="/foods/{{ chosen.id }}" target="_blank" rel="noopener">Add a portion size for this food</a>
+  </div>
+  {% else %}
+  <div class="field">
+    <label for="food-search">Food</label>
+    <input id="food-search" type="search" name="q" placeholder="Type to search, for example: wholemeal bread" autocomplete="off" autofocus
+           data-pick-first="#food-choices .choice-list"
+           hx-get="/diaries/{{ diary.id }}/food-choices" hx-trigger="input changed delay:200ms, search" hx-target="#food-choices" hx-swap="innerHTML" hx-include="this, #entry-day, #entry-meal">
+  </div>
+  <div id="food-choices" class="choices" aria-live="polite"></div>
+  {% endif %}
+</form>

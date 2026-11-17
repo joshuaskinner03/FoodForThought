@@ -1,0 +1,32 @@
+{% extends "client_base.html" %}
+{% block tab %}
+<div class="card-head">
+  <div>
+    <h2>Check food matches: {{ diary.title }}</h2>
+    <p class="muted sub">{{ diary.source_label }} &middot; {{ counts.pending }} to check, {{ counts.confirmed }} confirmed, {{ counts.skipped }} skipped</p>
+  </div>
+  <span class="row-actions">
+    <a href="/diaries/{{ diary.id }}">Open diary</a>
+    {% if not counts.pending %}<a class="button small" href="/diaries/{{ diary.id }}/analysis">Analysis</a>{% endif %}
+  </span>
+</div>
+{% if request.query_params.get("confirmed") %}<p class="notice">{{ request.query_params.get("confirmed") }} entries confirmed.</p>{% endif %}
+<p class="hint">For each line the client wrote, pick the matching food and check the weight, then Confirm. Skip anything that should not be counted. The analysis opens once nothing is left to check. Matches you confirm are remembered for next time.</p>
+{% if ready %}
+<form method="post" action="/diaries/{{ diary.id }}/review/confirm-remembered">
+  <button class="quiet" type="submit">Confirm the {{ ready }} entries that have a remembered match and a known weight</button>
+</form>
+{% endif %}
+<p class="chips">Show:
+  <a href="/diaries/{{ diary.id }}/review"{% if show != "all" %} class="here"{% endif %}>Still to check</a>
+  <a href="/diaries/{{ diary.id }}/review?show=all"{% if show == "all" %} class="here"{% endif %}>Everything</a>
+</p>
+<div class="review-list">
+  {% for row in rows %}
+  {% set day_label = row.entry.day|nice_date %}
+  {% include "_review_row.html" %}
+  {% else %}
+  <section class="card"><p>Nothing left to check. <a href="/diaries/{{ diary.id }}/analysis">Open the analysis</a>.</p></section>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -9,7 +9,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, Request, Response
 from starlette.datastructures import FormData
 
-from . import clients, invoices, measurements, practice
+from . import clients, invoices, matching, measurements, practice
 from .audit import now_iso
 from .files import AttachmentError
 from .web import Redirect, Web, form_data, text
@@ -77,6 +77,25 @@ def collect(web: Web, client_id: int) -> dict:
         }
         for invoice in invoices.load(db, "WHERE client_id = ?", (client_id,))
     ]
+    record["food_diaries"] = []
+    for diary in db.query("SELECT * FROM food_diary WHERE client_id = ? ORDER BY start_date, id", (client_id,)):
+        entries = db.query(
+            "SELECT e.day, e.meal, e.grams, e.quantity, e.unit, e.status, e.source_text, e.source_amount, "
+            "e.source_detail, f.name AS food FROM diary_entry e LEFT JOIN food f ON f.id = e.food_id "
+            "WHERE e.diary_id = ? ORDER BY e.day, e.position, e.id",
+            (diary["id"],),
+        )
+        record["food_diaries"].append(
+            {
+                "title": diary["title"],
+                "source": diary["source"],
+                "start_date": diary["start_date"],
+                "days": diary["days"],
+                "life_stage": diary["life_stage"],
+                "notes": diary["notes"],
+                "entries": [dict(entry) for entry in entries],
+            }
+        )
     record["files"] = [
         {
             "file": _archive_name(row),
@@ -115,7 +134,25 @@ def erase(web: Web, client_id: int) -> dict:
     db = web.db
     clients.get(db, client_id)
     file_ids = [row["file_id"] for row in db.query("SELECT file_id FROM attachment WHERE client_id = ?", (client_id,))]
+    own_words = {
+        matching.text_key(row["source_text"])
+        for row in db.query(
+            "SELECT e.source_text FROM diary_entry e JOIN food_diary d ON d.id = e.diary_id "
+            "WHERE d.client_id = ? AND e.source_text != ''",
+            (client_id,),
+        )
+    }
+    shared = {
+        matching.text_key(row["source_text"])
+        for row in db.query(
+            "SELECT e.source_text FROM diary_entry e JOIN food_diary d ON d.id = e.diary_id "
+            "WHERE d.client_id != ? AND e.source_text != ''",
+            (client_id,),
+        )
+    }
     with db.transaction():
+        for key in own_words - shared:
+            db.execute("DELETE FROM food_match WHERE text_key = ?", (key,))
         db.execute("DELETE FROM invoice WHERE client_id = ? AND status = 'draft'", (client_id,))
         kept = db.one("SELECT count(*) FROM invoice WHERE client_id = ?", (client_id,))[0]
         db.execute("DELETE FROM client WHERE id = ?", (client_id,))
@@ -141,6 +178,7 @@ def router(web: Web) -> APIRouter:
                 ("completed forms", "form_response"),
                 ("measurements", "measurement"),
                 ("letters", "letter"),
+                ("food diaries", "food_diary"),
                 ("sets of targets", "target"),
                 ("consent records", "consent"),
                 ("files", "attachment"),

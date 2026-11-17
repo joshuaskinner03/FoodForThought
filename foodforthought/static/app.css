@@ -371,3 +371,68 @@ ol { padding-left: 1.3rem; }
 ol li { margin-bottom: 0.3rem; overflow-wrap: anywhere; }
 @media (max-width: 900px) { .nutrient-groups { grid-template-columns: 1fr; } }
 .nutrient-groups td:last-child { white-space: nowrap; }
+
+.diary-layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 1.2rem; align-items: start; }
+.photo-panel {
+  position: sticky;
+  top: 0.8rem;
+  max-height: calc(100vh - 1.6rem);
+  overflow: auto;
+  padding: 0.8rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.photo-panel img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.photo-upload label { font-weight: 400; font-size: 0.9rem; }
+.photo-upload button { margin-top: 0.5rem; }
+.entry-form h3 { margin-top: 0; }
+.entry-form .chosen { margin: 0.9rem 0 0; display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; align-items: baseline; }
+.choices { display: flex; flex-direction: column; margin-top: 0.4rem; max-height: 22rem; overflow: auto; }
+.choice {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0.6rem;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+}
+.choice:hover, .choice:focus-visible { background: #e6f2eb; }
+.choice .muted { white-space: nowrap; font-size: 0.85rem; }
+.day-entries h4 { margin: 0.8rem 0 0.2rem; font-size: 0.9rem; color: var(--muted); }
+ul.entries { list-style: none; margin: 0; padding: 0; }
+ul.entries li { padding: 0.4rem 0; border-bottom: 1px solid var(--line); }
+.entry-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.2rem 1rem; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.choice-list { display: flex; flex-direction: column; }
+table.analysis td.n { white-space: nowrap; }
+.review-row { padding: 1rem 1.2rem; }
+.review-row.confirmed, .review-row.skipped { padding: 0.6rem 1.2rem; }
+.review-head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.review-head .amount { margin-left: 0.5rem; padding: 0.05rem 0.5rem; background: #efece3; border-radius: 4px; }
+.suggestions { margin-top: 0.6rem; }
+.suggestions legend { font-size: 0.85rem; color: var(--muted); font-weight: 400; }
+.suggestions label.option { margin: 0.2rem 0; }
+.search-row { margin-top: 0.5rem; max-width: 30rem; }
+.confirm-row { display: grid; grid-template-columns: 10rem minmax(0, 1fr) max-content; gap: 0 1rem; align-items: end; }
+.confirm-row .field label { margin-top: 0.6rem; }
+.confirm-detail .hint { margin-bottom: 0.3rem; }
+.confirm-buttons { display: flex; gap: 0.5rem; }
+.confirm-buttons button { margin-top: 0; }
+.review-done { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.review-done p { margin: 0.3rem 0 0; }
+table.analysis td.guidance { text-align: left; font-size: 0.88rem; color: var(--muted); max-width: 16rem; }
+table.analysis th:nth-child(5) { text-align: left; }
+.gap { margin-left: 0.15rem; color: var(--danger); font-weight: 600; cursor: help; }
+.badge.state-below_lrni { background: var(--error-bg); border-color: var(--error-line); }
+.badge.state-below_rni { background: var(--warn-bg); border-color: var(--warn-line); }
+.badge.state-meets { background: #e6f2eb; border-color: #a9cdb9; }
+.badge.state-not_assessed, .badge.state-no_reference { background: #eceae2; border-color: var(--line); }
+.notes p { margin: 0.4rem 0; }
+.print-only { display: none; }
+@media print { .print-only { display: block; } }
+@media (max-width: 1000px) {
+  .diary-layout { grid-template-columns: 1fr; }
+  .photo-panel { position: static; max-height: none; }
+  .confirm-row { grid-template-columns: 1fr; }
+}

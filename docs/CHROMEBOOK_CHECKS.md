@@ -2,6 +2,61 @@
 
 Do these in order. Note anything that differs from "Expect".
 
+## Phase 2, step 2: food diaries
+
+1. **Update.** Stop the app with Ctrl+C, then:
+   ```
+   cd foodforthought
+   git pull
+   bash start.sh
+   ```
+   Expect a short setup pause while one new library installs (internet
+   needed). If `git pull` says "not a git repository", do this once instead,
+   from your home folder:
+   ```
+   mv foodforthought foodforthought-old
+   git clone https://github.com/joshuaskinner03/FoodForThought.git foodforthought
+   cd foodforthought
+   bash start.sh
+   ```
+   Your data is in a separate folder and is not affected. Delete
+   `foodforthought-old` once everything works.
+2. **Type in a diary.** Open a client with a sex and date of birth → Food
+   diaries → Start typing in (3 days). Add a photo of any handwritten page
+   (JPEG or PNG). Expect it beside the form.
+3. **Keyboard speed.** In Food, type `porr`, press Enter, type `250`, press
+   Enter. Expect the entry to appear under the right day and meal and the
+   cursor back in Food. Change Meal to Lunch and add two more foods the same
+   way, as fast as you like. Then change Day and add one. Every entry must be
+   under the day and meal you chose; tell me if any is not.
+4. **Portions.** Pick a food that has a saved portion (add one under Foods if
+   needed). Expect the portion in the Unit list; 1.5 of it should show the
+   right grams.
+5. **Edit and remove.** Edit an entry's weight, then remove one.
+6. **Template.** On the Food diaries tab, download a template for 3 days.
+   Open it in the Files app (or Google Sheets): expect dates down the first
+   column, drop-down lists for Meal and Unit, and an instructions sheet. Fill
+   in about 10 lines as a client would (mix grams, "2 slices", "1 cup", a
+   brand name, and something odd like "glass of wine"). Save it as .xlsx.
+7. **Import and review.** Import it. For each line check that the suggested
+   food is sensible, that weights in g or ml are filled in, and that "slices"
+   or "cup" ask for a weight. Use Search on one line to pick another food,
+   confirm one with "Save as a portion" ticked, and skip one.
+8. **Remembered matches.** Import the same file again. Expect most lines
+   marked Remembered and a button to confirm them all at once.
+9. **Cronometer** (if you or a client use it). In Cronometer: More →
+   Account → Account Data → Export Data → Export Food & Recipe Entries.
+   Import the .csv file. Same review as step 7.
+10. **Analysis.** Open Analysis on a fully reviewed diary. Check against
+    the food pages for two foods that the totals make sense, that the
+    reference group shows the right age and sex, and that a diary of 1 or 2
+    days shows the "Fewer than 3 days" warning. Set the diary's details to
+    pregnant and check the folic acid note appears and the raised values are
+    marked †. Try Print.
+11. **Export.** Client → Export or erase this record → Download. Expect the
+    food diaries in the record page.
+12. **Backup.** Download a new encrypted backup.
+
 ## Phase 2, step 1: foods and targets
 
 The importer was built from the published guide to the CoFID file and tested on

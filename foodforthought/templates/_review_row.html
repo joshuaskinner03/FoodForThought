@@ -1,0 +1,68 @@
+{% set e = row.entry %}
+<article class="card review-row {{ e.status }}" id="entry-{{ e.id }}">
+  <div class="review-head">
+    <div>
+      <strong>{{ e.source_text }}</strong>
+      {% if e.source_amount %}<span class="amount">{{ e.source_amount }}</span>{% endif %}
+      {% if e.source_detail %}<span class="muted"> &middot; {{ e.source_detail }}</span>{% endif %}
+    </div>
+    <span class="muted">{{ day_label }} &middot; {{ e.meal }}</span>
+  </div>
+  {% if row_error is defined and row_error %}<p class="notice error" role="alert">{{ row_error }}</p>{% endif %}
+  {% if e.status == "pending" %}
+  <fieldset class="suggestions">
+    <legend>Matching food</legend>
+    {% if row.weak %}<p class="hint">No close match. Pick one only if it is right, otherwise search below or skip it.</p>{% endif %}
+    {% for s in row.suggestions %}
+    <label class="option">
+      <input type="radio" name="food_id" value="{{ s.food_id }}" form="confirm-{{ e.id }}"{% if s.food_id == row.selected %} checked{% endif %}
+             hx-get="/diaries/{{ diary.id }}/entries/{{ e.id }}/row?food={{ s.food_id }}" hx-trigger="change" hx-target="#entry-{{ e.id }}" hx-swap="outerHTML">
+      <span>{{ s.name }}</span>
+      {% if s.remembered %}<span class="badge completed">Remembered</span>{% elif s.score %}<span class="muted">{{ s.score|round|int }}% match</span>{% endif %}
+    </label>
+    {% else %}
+    <p class="muted">No likely match found. Search for the food below.</p>
+    {% endfor %}
+  </fieldset>
+  <form class="inline-row search-row" method="get" action="/diaries/{{ diary.id }}/entries/{{ e.id }}/row"
+        hx-get="/diaries/{{ diary.id }}/entries/{{ e.id }}/row" hx-target="#entry-{{ e.id }}" hx-swap="outerHTML">
+    <label class="visually-hidden" for="q-{{ e.id }}">Search for another food</label>
+    <input id="q-{{ e.id }}" type="search" name="q" value="{{ row.query }}" placeholder="Not right? Search for another food" autocomplete="off">
+    <button class="quiet small" type="submit">Search</button>
+  </form>
+  <form id="confirm-{{ e.id }}" class="confirm-row" method="post" action="/diaries/{{ diary.id }}/entries/{{ e.id }}/confirm"
+        hx-post="/diaries/{{ diary.id }}/entries/{{ e.id }}/confirm" hx-target="#entry-{{ e.id }}" hx-swap="outerHTML">
+    <div class="field">
+      <label for="g-{{ e.id }}">Weight eaten, g</label>
+      <input id="g-{{ e.id }}" name="grams" inputmode="decimal" autocomplete="off" value="{{ row.estimate.grams|plain if row.estimate.grams else '' }}" required>
+    </div>
+    <div class="confirm-detail">
+      {% if row.estimate.note %}<p class="hint{% if row.estimate.how in ('unknown', 'energy') %} warn-text{% endif %}">{{ row.estimate.note }}</p>{% endif %}
+      {% if row.offer_portion %}
+      <label class="option">
+        <input type="checkbox" name="save_portion" checked>
+        Save "{{ row.portion_name }}" as a portion of this food, worked out from this weight
+      </label>
+      <input type="hidden" name="portion_name" value="{{ row.portion_name }}">
+      {% endif %}
+    </div>
+    <div class="confirm-buttons">
+      <button type="submit"{% if not row.suggestions %} disabled{% endif %}>Confirm</button>
+      <button class="quiet" type="submit" formaction="/diaries/{{ diary.id }}/entries/{{ e.id }}/skip" formnovalidate
+              hx-post="/diaries/{{ diary.id }}/entries/{{ e.id }}/skip" hx-target="#entry-{{ e.id }}" hx-swap="outerHTML">Skip</button>
+    </div>
+  </form>
+  {% else %}
+  <div class="review-done">
+    {% if e.status == "confirmed" %}
+    <p><span class="badge completed">Confirmed</span> {{ row.food.name if row.food else "" }}, {{ e.grams|plain }} g{% if row.kcal %}, {{ row.kcal|number(0) }} kcal{% endif %}</p>
+    {% else %}
+    <p><span class="badge cancelled">Skipped</span> Not counted in the analysis.</p>
+    {% endif %}
+    <form method="post" action="/diaries/{{ diary.id }}/entries/{{ e.id }}/reopen"
+          hx-post="/diaries/{{ diary.id }}/entries/{{ e.id }}/reopen" hx-target="#entry-{{ e.id }}" hx-swap="outerHTML">
+      <button class="link" type="submit">Change</button>
+    </form>
+  </div>
+  {% endif %}
+</article>
