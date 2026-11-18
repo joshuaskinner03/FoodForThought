@@ -12,7 +12,7 @@ from fastapi.responses import PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException
 
-from . import account, clients, diaries, diary, foods, forms, invoices, letters, meal_plans, measurements, notes, practice, privacy, pwa, recipes, targets, updates
+from . import account, autobackup, clients, diaries, diary, foods, forms, invoices, letters, meal_plans, measurements, notes, practice, privacy, pwa, recipes, targets, updates
 from .config import Config, default_data_dir
 from .core import Core
 from .web import COOKIE, PKG, Redirect, Web
@@ -36,13 +36,19 @@ def create_app(cfg: Config | None = None, clock: Callable[[], float] = time.mono
     shutil.rmtree(cfg.tmp_dir, ignore_errors=True)
     cfg.tmp_dir.mkdir(exist_ok=True)
     web = Web(cfg, core)
+    web.scheduler = autobackup.Scheduler(cfg, core)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
         async def watchdog():
+            waited = 0
             while True:
                 await asyncio.sleep(5)
                 core.expire_if_idle()
+                waited += 5
+                if waited >= autobackup.CHECK_SECONDS:
+                    waited = 0
+                    asyncio.create_task(asyncio.to_thread(web.scheduler.run_if_due))
 
         task = asyncio.create_task(watchdog())
         try:

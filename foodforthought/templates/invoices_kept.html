@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Invoices kept after erasure · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Invoices kept after erasure</h1></div>
+  <a class="button quiet" href="/invoices">Back to invoices</a>
+</div>
+<section class="card">
+  <p>When a client's record is erased, their issued invoices are kept as financial records, because HMRC requires business records to be kept for at least {{ years }} years after the 31 January Self Assessment deadline for the tax year. The date below follows that rule from the later of the issue date and the last payment. After it, the invoice can be deleted.</p>
+  {% if kept %}
+  <form method="post" action="/invoices/kept/delete">
+    <table>
+      <thead><tr><th></th><th>Invoice</th><th>Issued</th><th>Billed to</th><th class="n">Total</th><th>Keep until</th></tr></thead>
+      <tbody>
+        {% for i in kept %}
+        <tr{% if not i.can_delete %} class="faded"{% endif %}>
+          <td>{% if i.can_delete %}<input type="checkbox" name="invoice" value="{{ i.id }}" checked aria-label="Delete invoice {{ i.number }}">{% endif %}</td>
+          <td>{{ i.number }}{% if i.status == "void" %} <span class="badge cancelled">Void</span>{% endif %}</td>
+          <td>{{ i.issue_date|nice_date }}</td>
+          <td>{{ i.bill_to_name }}</td>
+          <td class="n">{{ i.totals.total|money }}</td>
+          <td>{{ i.keep_until.isoformat()|nice_date }}{% if i.can_delete %} <span class="badge unpaid">Can be deleted</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if kept|selectattr("can_delete")|list %}
+    <div class="actions"><button class="danger" type="submit" data-confirm="Delete the ticked invoices for good? Make sure your tax returns for those years are settled.">Delete the ticked invoices</button></div>
+    {% else %}
+    <p class="muted">None can be deleted yet.</p>
+    {% endif %}
+  </form>
+  {% else %}
+  <p class="muted">No invoices are being kept for erased clients.</p>
+  {% endif %}
+</section>
+{% endblock %}

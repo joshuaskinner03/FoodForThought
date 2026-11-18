@@ -477,3 +477,10 @@ table.compact th, table.compact td { padding: 0.3rem 0.3rem; font-size: 0.86rem;
 .small-link { font-size: 0.9rem; margin-left: auto; margin-right: 0.8rem; }
 .portion-table td.n, .portion-table th.n { text-align: right; white-space: nowrap; }
 .portion-table td:first-child, .portion-table td:last-child { text-align: center; }
+
+html.size-large { font-size: 19px; }
+html.size-larger { font-size: 21px; }
+html.spacing-relaxed body { line-height: 1.75; }
+html.spacing-relaxed p, html.spacing-relaxed li { margin-bottom: 0.6em; }
+html.spacing-loose body { line-height: 2; letter-spacing: 0.015em; word-spacing: 0.08em; }
+html.spacing-loose p, html.spacing-loose li { margin-bottom: 0.8em; }

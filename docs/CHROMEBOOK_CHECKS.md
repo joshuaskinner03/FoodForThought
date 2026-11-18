@@ -2,6 +2,31 @@
 
 Do these in order. Note anything that differs from "Expect".
 
+## Automatic backups, income export, kept invoices and comfort
+
+1. **Update from the app.** Download an encrypted backup, then Settings →
+   This app → Check for updates → Update and restart. Expect version 0.8.0.
+2. **Share a folder.** In the Files app, open Google Drive (or a USB stick),
+   make a folder called "FoodForThought backups", right-click it and choose
+   Share with Linux.
+3. **Turn on automatic backups.** Settings → Automatic backups. Click in
+   the Folder box: expect the shared folder in the suggestions, under
+   /mnt/chromeos. Choose it, keep 14, and press Turn on and back up now.
+   In the Files app, expect a .fftbackup file in the folder.
+4. **Next day.** Unlock FoodForThought the next day and check a second file
+   appears within a few minutes.
+5. **Try a restore (optional but worth it once).** Settings → Restore from
+   a backup, pick the file from the folder, and check it is accepted. The
+   restore keeps a safety copy of what it replaces.
+6. **Income export.** Invoices → Income summary → each Download button.
+   Open both files in Google Sheets and check the figures against the
+   page.
+7. **Kept invoices.** Only if you have erased a client with issued
+   invoices: Invoices → Invoices kept after erasure lists them with a keep
+   until date. Invoices erased before this update are not listed.
+8. **Comfort.** Settings → Comfort: try Large text with More space, then
+   use a few pages. Pick what feels best.
+
 ## Logo, colours, portion optimiser and note drafts
 
 1. **Update from the app.** Download an encrypted backup, then Settings →

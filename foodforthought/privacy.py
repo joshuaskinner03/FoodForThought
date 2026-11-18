@@ -174,6 +174,7 @@ def erase(web: Web, client_id: int) -> dict:
             db.execute("DELETE FROM food_match WHERE text_key = ?", (key,))
         db.execute("DELETE FROM invoice WHERE client_id = ? AND status = 'draft'", (client_id,))
         kept = db.one("SELECT count(*) FROM invoice WHERE client_id = ?", (client_id,))[0]
+        db.execute("UPDATE invoice SET erased_at = ? WHERE client_id = ?", (now_iso(), client_id))
         db.execute("DELETE FROM client WHERE id = ?", (client_id,))
         db.execute(
             "UPDATE audit_log SET detail = '' WHERE client_id = ? AND action = 'client_updated'", (client_id,)

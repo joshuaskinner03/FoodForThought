@@ -2,6 +2,7 @@
 {% from "_macros.html" import status_badge %}
 {% block content %}
 <h1>Home</h1>
+{% if kept_due %}<p class="warn">{{ kept_due }} invoice{{ "" if kept_due == 1 else "s" }} kept for erased clients {{ "is" if kept_due == 1 else "are" }} past the retention date and can now be deleted. <a href="/invoices/kept">Review them</a></p>{% endif %}
 {% for d in drafts %}
 <p class="warn">Unsaved note for {{ d.first_name }} {{ d.last_name }}, kept {{ d.updated_at|local_stamp }}. <a href="/clients/{{ d.client_id }}/notes/{{ d.note_id ~ '/edit' if d.note_id else 'new' }}">Carry on writing</a></p>
 {% endfor %}
