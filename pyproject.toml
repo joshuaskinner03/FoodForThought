@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "foodforthought"
-version = "0.4.0"
+version = "0.5.0"
 description = "Local-only practice management for a private nutritionist"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -37,7 +37,7 @@ foodforthought = "foodforthought.__main__:main"
 include = ["foodforthought*"]
 
 [tool.setuptools.package-data]
-foodforthought = ["migrations/*.sql", "templates/*.html", "static/*", "static/vendor/*", "fonts/*"]
+foodforthought = ["migrations/*.sql", "templates/*.html", "static/*", "static/vendor/*", "static/icons/*", "fonts/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

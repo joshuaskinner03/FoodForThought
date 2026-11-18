@@ -1,0 +1,10 @@
+{% if job %}
+<section class="card update-status" id="update-status"{% if job.state == "running" %} hx-get="/updates/status" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+  <h2>{% if job.state == "running" %}Updating…{% elif job.state == "restarting" %}Restarting…{% elif job.state == "done" %}Update installed{% else %}The update did not work{% endif %}</h2>
+  <ol class="steps">{% for step in job.steps %}<li>{{ step }}</li>{% endfor %}</ol>
+  {% if job.state == "running" %}<p class="hint">Keep this page open. FoodForThought restarts by itself when the update is in.</p>
+  {% elif job.state == "restarting" %}<p data-wait-restart>FoodForThought is restarting with the new version. The unlock page opens in a moment.</p>
+  {% elif job.state == "done" %}<p>Close FoodForThought and open it again to use the new version.</p>
+  {% else %}<p class="notice error" role="alert">{{ job.error }}</p>{% endif %}
+</section>
+{% endif %}

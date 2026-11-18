@@ -20,19 +20,37 @@ bash start.sh
 
 Windows: double-click `start.bat`.
 
-To update, stop the app (Ctrl+C), then:
+### Updating
 
-```
-cd foodforthought
-git pull
-bash start.sh
-```
+*Settings → This app → Check for updates* asks GitHub for a newer version and
+lists what changed. *Update and restart* downloads it, installs any new
+libraries, and restarts; you then unlock again. If installing fails, the
+previous version is kept. This needs a copy made with `git clone`.
+
+By hand: stop the app (Ctrl+C), then run `git pull` and `bash start.sh` in the
+program folder.
 
 The first run creates a private Python environment in `.venv` and downloads the
 dependencies. After that it starts offline. The app opens at
 <http://localhost:8765>. Stop it with Ctrl+C in the terminal.
 
-Options: `--port 8765`, `--data /path/to/folder`, `--no-browser`.
+Options: `--port 8765`, `--data /path/to/folder`, `--no-browser`, `--launch`
+(open it, starting it in the background if it is not running),
+`--install-app` and `--remove-app`.
+
+### Open it from an icon (ChromeOS and Linux)
+
+*Settings → This app → Add to the launcher* (or `bash start.sh --install-app`)
+adds a FoodForThought icon to the app launcher. On a Chromebook it appears in
+the Linux apps folder and can be pinned to the shelf. Clicking it starts
+FoodForThought in the background if it is not already running and opens it
+in Chrome; no Terminal is needed. Start-up messages and errors go to `app.log`
+in the data folder.
+
+To give it a window of its own, install it from Chrome (*Install* in Chrome's
+menu, or the install icon in the address bar). If that window is opened while
+FoodForThought is not running, it shows a page saying so and opens the app by
+itself once it starts.
 
 ## Where the data lives
 
@@ -224,7 +242,12 @@ their accountant.
   files, each encrypted with AES-256-GCM.
 - The server listens on `127.0.0.1` only, checks the `Host` and `Origin`
   headers, and serves every script and style itself. It makes no outbound
-  network requests.
+  network requests, except when you press *Check for updates* or *Update and
+  restart*, which run `git` to fetch the program from GitHub. Nothing is
+  sent about you or your clients.
+- The service worker that lets Chrome install it as an app stores only the
+  "not running" page, the style sheet and the icon. It never stores pages
+  with client details.
 - Locking closes the database and drops the keys. Auto-lock runs on the server,
   so it works even if the browser tab is closed.
 - The activity log records what was done and to which record, never the

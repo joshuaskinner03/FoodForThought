@@ -1,4 +1,23 @@
 (() => {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+
+  const waitForRestart = () => {
+    if (!document.querySelector("[data-wait-restart]") || window.fftWaiting) return;
+    window.fftWaiting = true;
+    const poll = async () => {
+      try {
+        const status = await (await fetch("/api/status", { cache: "no-store" })).json();
+        if (!status.unlocked) return window.location.replace("/unlock?msg=updated");
+      } catch (err) {
+        /* restarting */
+      }
+      setTimeout(poll, 1500);
+    };
+    setTimeout(poll, 1500);
+  };
+  document.addEventListener("DOMContentLoaded", waitForRestart);
+  document.addEventListener("htmx:afterSettle", waitForRestart);
+
   document.addEventListener("submit", (event) => {
     const source = event.submitter && event.submitter.dataset.confirm ? event.submitter : event.target;
     const question = source.dataset.confirm;

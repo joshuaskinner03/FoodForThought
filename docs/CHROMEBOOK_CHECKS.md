@@ -2,6 +2,42 @@
 
 Do these in order. Note anything that differs from "Expect".
 
+## App icon and updates
+
+1. **Get this version.** This is the last time you need the Terminal for an
+   update. Stop the app with Ctrl+C, then type:
+   ```
+   cd fft
+   git pull
+   bash start.sh
+   ```
+2. **Add the icon.** Unlock → Settings → This app → Add to the launcher.
+   Expect "FoodForThought is now in the launcher".
+3. **Close the Terminal.** Press Ctrl+C, then close the Terminal window.
+4. **Start from the icon.** Open the launcher (the circle at the bottom
+   left) → Linux apps folder → FoodForThought (green leaf). Expect Chrome to
+   open FoodForThought after a few seconds. Right-click the icon → Pin to
+   shelf.
+5. **Click it again** while it is open. Expect FoodForThought to open again
+   straight away, with no error.
+6. **Its own window.** In Chrome, on the FoodForThought page, open the menu
+   (three dots, top right) and look for Install FoodForThought (it may be
+   under Cast, save and share). Install it. Expect a window of its own with
+   the leaf icon on the shelf.
+7. **One icon or two?** Close that window. In the ChromeOS Settings app, go
+   to Apps → Manage your apps → FoodForThought and turn on opening supported
+   links in the app. Then click the Linux icon from step 4. Tell me whether
+   FoodForThought opened in its own window or in a Chrome tab. I will then
+   tell you which icon to keep pinned.
+8. **Not running.** Right-click the Terminal icon on the shelf → Shut down
+   Linux. Open the installed app from step 6. Expect a page saying
+   "FoodForThought is not running". Leave it open, click the Linux icon, and
+   expect the page to open FoodForThought by itself within a few seconds.
+9. **Updates.** Settings → This app → Check for updates → Check for updates.
+   Expect "You have the latest version." From now on, update this way: when
+   I tell you a new step is ready, open this page and press Update and
+   restart.
+
 ## Phase 2, step 2: food diaries
 
 1. **Update.** Stop the app with Ctrl+C, then:

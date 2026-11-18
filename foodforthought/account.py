@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from starlette.background import BackgroundTask
 
-from . import audit, backup, diary
+from . import audit, backup, diary, launcher, updates
 from .config import MIN_PASSWORD_LENGTH
 from .core import Throttled
 from .db import SchemaTooNew
@@ -117,6 +117,9 @@ def router(web: Web) -> APIRouter:
             auto_lock=core.auto_lock_minutes,
             last_backup=web.db.get_setting("last_backup"),
             safety_copy=copy.name if copy else None,
+            about=updates.current(),
+            launcher_supported=launcher.supported(),
+            launcher_installed=launcher.installed(),
         )
 
     @r.get("/settings")

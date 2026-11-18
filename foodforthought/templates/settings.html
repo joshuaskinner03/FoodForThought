@@ -32,6 +32,21 @@
   </form>
 </section>
 
+<section class="card" id="this-app">
+  <h2>This app</h2>
+  <p>Version {{ about.version }}{% if about.commit %} ({{ about.commit }}, {{ about.day|nice_date }}){% endif %}. <a href="/updates">Check for updates</a></p>
+  {% if launcher_supported %}
+  {% if launcher_installed %}
+  <p>FoodForThought is in the launcher. Click its icon to start it and open it; you can pin it to the shelf.</p>
+  <form method="post" action="/settings/launcher/remove"><button class="quiet small" type="submit">Remove from the launcher</button></form>
+  {% else %}
+  <p>Add an icon to the launcher that starts FoodForThought and opens it, without the Terminal.</p>
+  <form method="post" action="/settings/launcher"><button type="submit">Add to the launcher</button></form>
+  {% endif %}
+  {% endif %}
+  <p class="hint">To open FoodForThought in its own window, use Install in Chrome's menu or the install icon at the right of the address bar.</p>
+</section>
+
 <section class="card">
   <h2>Backup and restore</h2>
   <p>Last backup: {% if last_backup %}{{ last_backup|local_stamp }}{% else %}<span class="warn-text">never</span>{% endif %}</p>
