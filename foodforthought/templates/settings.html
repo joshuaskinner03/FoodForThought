@@ -85,15 +85,24 @@
   <form method="post" action="/settings/auto-backup">
     <div class="field">
       <label for="folder">{{ "Change the folder" if auto.folder else "Folder" }}</label>
-      <input id="folder" name="folder" value="{{ folder_value }}" list="shared-folders" placeholder="/mnt/chromeos/GoogleDrive/MyDrive/FoodForThought backups" autocomplete="off">
-      <datalist id="shared-folders">{% for f in suggestions %}<option value="{{ f }}">{% endfor %}</datalist>
+      <input id="folder" name="folder" value="{{ folder_value }}" placeholder="/mnt/chromeos/GoogleDrive/MyDrive/FoodForThought backups" autocomplete="off">
     </div>
-    <p class="hint">On a Chromebook: in the Files app, make a folder for the backups (for example in Google Drive), right-click it and choose Share with Linux. It then appears here as a suggestion, under /mnt/chromeos.</p>
+    <p class="hint">On a Chromebook: in the Files app, make a folder for the backups (for example in Google Drive), right-click it and choose Share with Linux, then reload this page. It appears in the list below.</p>
     <div class="field">
       <label for="keep">Keep</label>
       <select id="keep" name="keep">{% for n in keep_choices %}<option value="{{ n }}"{% if n == auto.keep %} selected{% endif %}>the last {{ n }} backups</option>{% endfor %}</select>
     </div>
     <div class="actions"><button type="submit">{{ "Save and back up now" if auto.folder else "Turn on and back up now" }}</button></div>
+    <h3>Folders shared with Linux</h3>
+    {% if suggestions %}
+    <ul class="folder-picks">
+      {% for f in suggestions %}
+      <li><span>{{ f.label }}<br><code>{{ f.path }}</code></span><button class="quiet small" type="submit" name="pick" value="{{ f.path }}">Use this folder</button></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">None found. Share a folder with Linux in the Files app, then reload this page.</p>
+    {% endif %}
   </form>
   {% if safety_copy %}
   <p>A safety copy of the data from before the last restore is kept in <code>{{ safety_copy }}</code> inside the data folder. Delete it once you are sure the restore is right.</p>

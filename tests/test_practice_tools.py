@@ -82,13 +82,27 @@ def test_schedule(unlocked, cfg, tmp_path, numbered):
 
 
 def test_suggested_folders(tmp_path):
-    (tmp_path / "GoogleDrive" / "MyDrive").mkdir(parents=True)
-    (tmp_path / "MyFiles" / "Downloads").mkdir(parents=True)
+    (tmp_path / "GoogleDrive" / "MyDrive" / "Backups").mkdir(parents=True)
+    (tmp_path / "MyFiles" / "Downloads" / "FoodForThought backups").mkdir(parents=True)
     (tmp_path / "MyFiles" / ".hidden").mkdir()
-    assert autobackup.suggested_folders(tmp_path) == [
-        str(tmp_path / "GoogleDrive"), str(tmp_path / "GoogleDrive" / "MyDrive"), str(tmp_path / "MyFiles"), str(tmp_path / "MyFiles" / "Downloads"),
-    ]
+    found = autobackup.suggested_folders(tmp_path)
+    paths = [f["path"] for f in found]
+    assert str(tmp_path / "MyFiles" / "Downloads" / "FoodForThought backups") in paths and str(tmp_path / "MyFiles" / ".hidden") not in paths
+    assert paths[0] == str(tmp_path / "GoogleDrive" / "MyDrive" / "Backups") and str(tmp_path / "MyFiles") not in paths
+    labels = {f["label"] for f in found}
+    assert "My files › Downloads › FoodForThought backups" in labels and "Google Drive › My Drive › Backups" in labels
     assert autobackup.suggested_folders(tmp_path / "none") == []
+
+
+def test_picking_a_suggested_folder(unlocked, tmp_path, monkeypatch, numbered):
+    shared = tmp_path / "chromeos"
+    (shared / "MyFiles" / "Downloads" / "FoodForThought backups").mkdir(parents=True)
+    monkeypatch.setattr(autobackup, "SHARED", shared)
+    page = unlocked.get("/settings").text
+    target = shared / "MyFiles" / "Downloads" / "FoodForThought backups"
+    assert "My files › Downloads › FoodForThought backups" in page and f'name="pick" value="{target}"' in page
+    done = unlocked.post("/settings/auto-backup", data={"folder": "", "pick": str(target), "keep": "14"})
+    assert done.status_code == 303 and len(list(target.iterdir())) == 1
 
 
 def test_retention_dates():

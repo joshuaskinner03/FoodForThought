@@ -20,14 +20,33 @@ class BackupFolderProblem(Exception):
     pass
 
 
-def suggested_folders(root: Path = SHARED) -> list[str]:
+NAMES = {"MyFiles": "My files", "GoogleDrive": "Google Drive", "MyDrive": "My Drive", "removable": "USB and SD cards"}
+DEPTH = 4
+LIMIT = 40
+
+
+def label(path: Path, root: Path) -> str:
+    parts = path.relative_to(root).parts
+    return " › ".join(NAMES.get(part, part) for part in parts)
+
+
+def suggested_folders(root: Path | None = None) -> list[dict]:
+    root = root or SHARED
     found = []
-    if root.is_dir():
-        for top in sorted(root.iterdir()):
-            if top.is_dir():
-                found.append(str(top))
-                found += [str(child) for child in sorted(top.iterdir()) if child.is_dir() and not child.name.startswith(".")][:12]
-    return found
+    level = [root] if root.is_dir() else []
+    for _ in range(DEPTH):
+        below = []
+        for folder in level:
+            try:
+                children = sorted(c for c in folder.iterdir() if c.is_dir() and not c.name.startswith("."))
+            except OSError:
+                continue
+            below += children
+        found += [c for c in below if os.access(c, os.W_OK)]
+        level = below
+    found = [path for path in set(found) if len(path.relative_to(root).parts) > 1]
+    found = sorted(found, key=lambda path: (-len(path.relative_to(root).parts), str(path).lower()))[:LIMIT]
+    return [{"path": str(path), "label": label(path, root)} for path in found]
 
 
 def check_folder(cfg: Config, raw: str) -> Path:
