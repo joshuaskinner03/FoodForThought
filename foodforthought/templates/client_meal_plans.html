@@ -1,0 +1,43 @@
+{% extends "client_base.html" %}
+{% from "_macros.html" import date_input %}
+{% block tab %}
+<section class="card">
+  <h2>Meal plans</h2>
+  {% if plans %}
+  <table>
+    <thead><tr><th>Plan</th><th>Days</th><th>Starts</th><th>Items</th><th></th></tr></thead>
+    <tbody>
+      {% for p in plans %}
+      <tr>
+        <td><a href="/meal-plans/{{ p.id }}">{{ p.title }}</a></td>
+        <td>{{ p.days }}</td>
+        <td>{{ p.start_date|nice_date if p.start_date else "" }}</td>
+        <td>{{ p.items }}</td>
+        <td class="row-actions"><a href="/meal-plans/{{ p.id }}/nutrition">Nutrition</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No meal plans yet. Start one below.</p>{% endif %}
+</section>
+<section class="card">
+  <h2>New meal plan</h2>
+  <form method="post" action="/clients/{{ client.id }}/meal-plans/new">
+    <div class="grid">
+      <div class="field"><label for="title">Title</label><input id="title" name="title" placeholder="for example: Week 1"></div>
+      <div class="field"><label for="days">Days</label><input id="days" name="days" type="number" min="1" max="{{ max_days }}" value="7"></div>
+      {{ date_input("Starts on (optional)", "start_date", hint="") }}
+    </div>
+    {% if templates %}
+    <div class="field">
+      <label for="template">Start from</label>
+      <select id="template" name="template">
+        <option value="">An empty plan</option>
+        {% for t in templates %}<option value="{{ t.id }}">Template: {{ t.title }} ({{ t.days }} days)</option>{% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="actions"><button type="submit">Create</button></div>
+  </form>
+</section>
+{% endblock %}

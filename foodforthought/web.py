@@ -38,6 +38,9 @@ MESSAGES = {
     "updated": "FoodForThought has been updated. Unlock to carry on.",
     "launcher-added": "FoodForThought is now in the launcher. On a Chromebook it is in the Linux apps folder.",
     "launcher-removed": "Removed from the launcher.",
+    "day-copied": "Day copied.",
+    "template-saved": "Saved as a template. This is the template; the client's plan is unchanged.",
+    "pdf-saved": "The PDF is saved in the client's Consent and files tab.",
 }
 
 ERRORS = {
@@ -51,6 +54,10 @@ ERRORS = {
     "portion": "Give the portion a name and a weight in grams above zero.",
     "diary-days": "Give a valid first day and between 1 and 14 days.",
     "entry": "Choose a food and a day, and give an amount above zero.",
+    "missing": "That recipe no longer exists.",
+    "recipe-used": "This recipe is in a meal plan, so it cannot be deleted. Archive it instead.",
+    "plan-days": "Enter a title, 1 to 14 days, and a start date as dd/mm/yyyy or none.",
+    "copy-day": "Choose two different days.",
     "erase-name": "The name typed did not match, so nothing was erased.",
 }
 

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Meal plan templates · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Recipes</h1></div>
+{% set page = "templates" %}{% include "_recipe_tabs.html" %}
+<section class="card">
+  <h2>Meal plan templates</h2>
+  <p class="hint">A template is a plan that is not for anyone yet. Start a client's plan from it on their Meal plans tab, then adjust it.</p>
+  {% if plans %}
+  <table>
+    <thead><tr><th>Template</th><th>Days</th><th>Items</th></tr></thead>
+    <tbody>{% for p in plans %}<tr><td><a href="/meal-plans/{{ p.id }}">{{ p.title }}</a></td><td>{{ p.days }}</td><td>{{ p.items }}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% else %}<p class="muted">No templates yet.</p>{% endif %}
+</section>
+<section class="card">
+  <h2>New template</h2>
+  <form method="post" action="/plan-templates/new" class="grid">
+    <div class="field"><label for="title">Title</label><input id="title" name="title" required placeholder="for example: 7-day vegetarian, 1800 kcal"></div>
+    <div class="field"><label for="days">Days</label><input id="days" name="days" type="number" min="1" max="{{ max_days }}" value="7" required></div>
+    <div class="actions"><button type="submit">Create</button></div>
+  </form>
+</section>
+{% endblock %}

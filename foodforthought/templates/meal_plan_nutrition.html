@@ -1,0 +1,26 @@
+{% extends layout %}
+{% block tab %}
+<div class="card-head no-print">
+  <h2>Nutrition: {{ plan.title }}</h2>
+  <span class="row-actions"><a href="/meal-plans/{{ plan.id }}">Open plan</a><button class="quiet small" type="button" data-print>Print</button></span>
+</div>
+<section class="card printable">
+  <h2 class="print-only">{{ name or "Template" }}: {{ plan.title }}</h2>
+  <dl class="facts">
+    <dt>Plan</dt><dd>{{ result.day_count }} of {{ plan.days }} days have food planned{% if result.empty_days %}; the averages leave out the empty days{% endif %}</dd>
+    <dt>Compared with</dt>
+    <dd>{% if result.group %}UK reference values for: {{ result.group.describe() }}{% elif not plan.client_id %}<span class="muted">No client, so no reference values. Templates show amounts only.</span>{% else %}<span class="warn-text">No reference values: the client's sex or date of birth is not recorded. <a href="/clients/{{ client.id }}/edit">Edit details</a></span>{% endif %}</dd>
+    {% if target %}<dt>Targets</dt><dd>Set {{ target.set_on|nice_date }} (<a href="/clients/{{ client.id }}/targets">Targets</a>)</dd>{% endif %}
+  </dl>
+  {% if result.day_count %}
+  {% set about = "plan" %}{% include "_nutrition_tables.html" %}
+  <h3>Day by day</h3>
+  <table class="numbers">
+    <thead><tr><th>Day</th><th>Energy, kcal</th><th>Protein, g</th><th>Fat, g</th><th>Carbohydrate, g</th><th>Fibre, g</th></tr></thead>
+    <tbody>{% for d in days %}<tr><td>{{ d.long }}</td>{% for key in ("energy_kcal", "protein", "fat", "carbohydrate", "fibre") %}<td>{{ d.totals[key].value|number(0 if key == "energy_kcal" else 1) }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table>
+  {% else %}
+  <p class="muted">Nothing is planned yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

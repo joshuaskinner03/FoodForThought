@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Recipes · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Recipes</h1></div>
+{% set page = "recipes" %}{% include "_recipe_tabs.html" %}
+<section class="card">
+  <form class="search" method="get" action="/recipes">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search by name or tag" aria-label="Search recipes">
+    {% if archived %}<input type="hidden" name="archived" value="1">{% endif %}
+    <button type="submit">Search</button>
+  </form>
+  {% if recipes %}
+  <table class="numbers">
+    <thead><tr><th>Recipe</th><th>Serves</th><th>kcal</th><th>Protein, g</th><th>Fat, g</th><th>Carbohydrate, g</th><th>Fibre, g</th></tr></thead>
+    <tbody>
+      {% for r in recipes %}
+      <tr>
+        <td><a href="/recipes/{{ r.id }}">{{ r.name }}</a>{% for tag in r.tags.split(", ") if tag %} <span class="badge">{{ tag }}</span>{% endfor %}{% if not r.count %} <span class="muted">no ingredients yet</span>{% endif %}</td>
+        <td>{{ r.servings|plain }}</td>
+        {% for key in ("energy_kcal", "protein", "fat", "carbohydrate", "fibre") %}<td>{{ r.per_serving[key].value|number(0 if key == "energy_kcal" else 1) }}{% if r.per_serving[key].gap %}*{% endif %}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="hint">Figures are per serving. * Some ingredients have no value for this nutrient, so the true figure is higher.</p>
+  {% else %}
+  <p class="muted">{% if q %}No recipes match "{{ q }}".{% elif archived %}No archived recipes.{% else %}No recipes yet. Add the first one below.{% endif %}</p>
+  {% endif %}
+  <p><a href="/recipes?archived={{ 0 if archived else 1 }}">{{ "Show current recipes" if archived else "Show archived recipes" }}</a></p>
+</section>
+<section class="card">
+  <h2>New recipe</h2>
+  <form method="post" action="/recipes/new" class="grid">
+    <div class="field"><label for="name">Name</label><input id="name" name="name" required></div>
+    <div class="field"><label for="servings">Servings it makes</label><input id="servings" name="servings" value="1" inputmode="decimal" required></div>
+    <div class="actions"><button type="submit">Create and add ingredients</button></div>
+  </form>
+</section>
+{% endblock %}

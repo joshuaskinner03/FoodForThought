@@ -1,0 +1,47 @@
+<div id="plan-panel" class="plan-layout">
+  <div class="plan-days">
+    {% for d in days %}
+    <section class="card plan-day" id="day-{{ d.n }}">
+      <div class="card-head">
+        <h3>{{ d.long }}</h3>
+        <span class="muted">{% if d.count %}{{ d.totals.energy_kcal.value|number(0) }} kcal{% if target %} ({{ (d.totals.energy_kcal.value / target.energy_kcal * 100)|number(0) }}% of target){% endif %} &middot; protein {{ d.totals.protein.value|number(0) }} g{% else %}Nothing planned yet{% endif %}</span>
+      </div>
+      {% for m in d.meals if m["items"] %}
+      <h4>{{ m.name }}</h4>
+      <ul class="entries">
+        {% for i in m["items"] %}
+        <li>
+          <div>{% if i.kind == "recipe" %}<a href="/recipes/{{ i.recipe_id }}">{{ i.name }}</a>{% else %}{{ i.name }}{% endif %}</div>
+          <div class="entry-meta">
+            <span class="muted">{{ i.amount }} &middot; {{ i.kcal|number(0) }} kcal</span>
+            <span class="row-actions">
+              <form method="post" action="/meal-plans/{{ plan.id }}/items/{{ i.id }}/delete" hx-post="/meal-plans/{{ plan.id }}/items/{{ i.id }}/delete" hx-target="#plan-panel" hx-swap="outerHTML">
+                <button class="link danger-text" type="submit" aria-label="Remove {{ i.name }}">Remove</button>
+              </form>
+            </span>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+    </section>
+    {% endfor %}
+  </div>
+  <div class="plan-side">
+    {% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
+    {% include "_plan_form.html" %}
+    <section class="card">
+      <h3>Each day</h3>
+      <table class="numbers compact">
+        <thead><tr><th>Day</th><th>kcal</th><th>Prot.</th><th>Fat</th><th>Carb.</th><th>Fibre</th></tr></thead>
+        <tbody>
+          {% for d in days %}
+          <tr><td><a href="#day-{{ d.n }}">{{ d.label }}</a></td>{% for key in ("energy_kcal", "protein", "fat", "carbohydrate", "fibre") %}<td>{{ d.totals[key].value|number(0) }}{% if d.totals[key].gap %}*{% endif %}</td>{% endfor %}</tr>
+          {% endfor %}
+          {% if target %}<tr class="target-row"><td>Target</td><td>{{ target.energy_kcal|number(0) }}</td><td>{{ target.protein_g|number(0) }}</td><td>{{ target.fat_g|number(0) }}</td><td>{{ target.carbohydrate_g|number(0) }}</td><td></td></tr>{% endif %}
+        </tbody>
+      </table>
+      <p class="hint">Grams except energy. * Some foods have no value for this, so the true figure is higher.{% if not target and plan.client_id %} No targets are set for this client yet.{% endif %}</p>
+    </section>
+  </div>
+</div>

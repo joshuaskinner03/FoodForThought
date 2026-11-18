@@ -1,0 +1,11 @@
+<div class="choice-list" data-q="{{ q|trim }}">
+{% for c in choices %}
+<a class="choice" href="{{ base }}?ref={{ c.kind }}:{{ c.id }}{% for k, v in keep.items() %}&amp;{{ k }}={{ v|urlencode }}{% endfor %}"
+   hx-get="{{ form_url }}?ref={{ c.kind }}:{{ c.id }}"{% if include %} hx-include="{{ include }}"{% endif %} hx-target="#entry-form" hx-swap="outerHTML">
+  <span>{% if c.kind == "recipe" %}<span class="badge">Recipe</span> {% endif %}{{ c.name }}{% if c.custom %} <span class="badge">Mine</span>{% endif %}</span>
+  <span class="muted">{% if c.kind == "recipe" %}{{ c.kcal|number(0) }} kcal/serving{% else %}{{ c.nutrients.get("energy_kcal")|number(0) }} kcal/100 g{% endif %}</span>
+</a>
+{% else %}
+{% if q %}<p class="muted">Nothing matches "{{ q }}". Try fewer or shorter words.</p>{% endif %}
+{% endfor %}
+</div>

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ plan.title }} · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ plan.title }}</h1><p class="muted sub">Meal plan template</p></div>
+  <a class="button quiet" href="/plan-templates">All templates</a>
+</div>
+{% block tab %}{% endblock %}
+{% endblock %}

@@ -2,6 +2,36 @@
 
 Do these in order. Note anything that differs from "Expect".
 
+## Phase 2, step 3: recipes and meal plans
+
+1. **Update from the app.** Download an encrypted backup first (Settings →
+   Backup and restore). Then Settings → This app → Check for updates → Update
+   and restart. Expect the unlock page after a minute, then version 0.6.0 at
+   the bottom of each page.
+2. **A recipe.** Recipes (top menu) → New recipe, for example "Porridge with
+   milk", serves 1. Add the oats and milk with the keyboard, as in a food
+   diary: type, Enter, amount, Enter. Fill in the method and save. Check
+   that the per-serving figures match what you would expect from the foods.
+3. **Shown as.** Add an ingredient with "Shown as" filled in (for example
+   "rolled oats"). This is the name the client sees in the PDF.
+4. **A plan.** Open a client → Meal plans → New meal plan: 7 days, starting
+   next Monday. Add breakfast as your recipe, then a few foods, using the
+   Day and Meal boxes. Recipes come first in the search results. Expect the
+   day totals to update straight away, and the target row if the client
+   has targets.
+5. **Copy a day.** Copy day 1 to days 2 and 3. Remove one item from day 2.
+6. **Nutrition.** Open Nutrition: expect the same tables as the diary
+   analysis, for the days with food planned.
+7. **Shopping list.** Open Shopping list: one line per food for the whole
+   plan, grouped by food type.
+8. **PDF.** Fill in the introduction under Plan details, then Download PDF
+   with and without "Energy and protein figures". Check your logo and
+   details at the top, the days, the recipes and the shopping list. Try
+   Save to client's files and find it in Consent and files.
+9. **Template.** Save a copy as a template, then start a new plan for
+   another client from it.
+10. **Backup.** Download a new encrypted backup.
+
 ## App icon and updates
 
 1. **Get this version.** This is the last time you need the Terminal for an
@@ -20,20 +50,13 @@ Do these in order. Note anything that differs from "Expect".
    shelf.
 5. **Click it again** while it is open. Expect FoodForThought to open again
    straight away, with no error.
-6. **Its own window.** In Chrome, on the FoodForThought page, open the menu
-   (three dots, top right) and look for Install FoodForThought (it may be
-   under Cast, save and share). Install it. Expect a window of its own with
-   the leaf icon on the shelf.
-7. **One icon or two?** Close that window. In the ChromeOS Settings app, go
-   to Apps → Manage your apps → FoodForThought and turn on opening supported
-   links in the app. Then click the Linux icon from step 4. Tell me whether
-   FoodForThought opened in its own window or in a Chrome tab. I will then
-   tell you which icon to keep pinned.
-8. **Not running.** Right-click the Terminal icon on the shelf → Shut down
-   Linux. Open the installed app from step 6. Expect a page saying
-   "FoodForThought is not running". Leave it open, click the Linux icon, and
-   expect the page to open FoodForThought by itself within a few seconds.
-9. **Updates.** Settings → This app → Check for updates → Check for updates.
+6. **Its own window (optional).** With FoodForThought open in a Chrome tab,
+   click the "Open in FoodForThought" button at the right of the address bar
+   (or Install in Chrome's menu the first time). Keep that Chrome app
+   installed so the button stays; it does not need to be on the shelf. The
+   Linux icon always opens a Chrome tab: ChromeOS does not let Linux apps
+   open an app window.
+7. **Updates.** Settings → This app → Check for updates → Check for updates.
    Expect "You have the latest version." From now on, update this way: when
    I tell you a new step is ready, open this page and press Update and
    restart.

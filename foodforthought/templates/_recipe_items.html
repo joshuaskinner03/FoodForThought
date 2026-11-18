@@ -1,0 +1,51 @@
+<div id="recipe-items">
+  {% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
+  {% include "_recipe_item_form.html" %}
+  <section class="card" id="ingredients">
+    <h2>Ingredients</h2>
+    {% if summary["items"] %}
+    <ul class="entries">
+      {% for i in summary["items"] %}
+      <li>
+        <div>{{ i.label or i.food_name }}{% if i.label %} <span class="muted">({{ i.food_name }})</span>{% endif %}</div>
+        <div class="entry-meta">
+          <span class="muted">{{ i.amount }}</span>
+          <span class="row-actions">
+            <form method="post" action="/recipes/{{ recipe.id }}/items/{{ i.id }}/delete" hx-post="/recipes/{{ recipe.id }}/items/{{ i.id }}/delete" hx-target="#recipe-items" hx-swap="outerHTML">
+              <button class="link danger-text" type="submit" aria-label="Remove {{ i.food_name }}">Remove</button>
+            </form>
+          </span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="hint">Total weight of ingredients {{ summary.raw_grams|number(0) }} g.</p>
+    {% else %}
+    <p class="muted">No ingredients yet. Add them above, as weighed before cooking.</p>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Per serving</h2>
+    <table class="numbers">
+      <tbody>
+        {% set labels = {"energy_kcal": "Energy", "protein": "Protein", "fat": "Fat", "saturates": "of which saturates", "carbohydrate": "Carbohydrate", "sugars": "of which sugars", "fibre": "Fibre"} %}
+        {% for key in summary_keys %}
+        {% set v = summary.per_serving[key] %}
+        <tr><td>{{ labels[key] }}</td><td class="n">{{ v.value|number(0 if key == "energy_kcal" else 1) }} {{ "kcal" if key == "energy_kcal" else "g" }}{% if v.gap %}*{% endif %}</td></tr>
+        {% endfor %}
+        <tr><td>Salt</td><td class="n">{{ salt.value|number(2) }} g{% if salt.gap %}*{% endif %}</td></tr>
+      </tbody>
+    </table>
+    <details>
+      <summary>All nutrients per serving</summary>
+      <table class="numbers">
+        <tbody>
+          {% for n in nutrients %}{% set v = summary.per_serving[n.key] %}
+          <tr><td>{{ n.label }}</td><td class="n">{{ v.value|number(n.places) }} {{ n.unit }}{% if v.gap %}*{% endif %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+    <p class="hint">* Some ingredients have no value for this nutrient in the food tables, so the true figure is higher.</p>
+  </section>
+</div>

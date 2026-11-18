@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ recipe.name }} · FoodForThought{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ recipe.name }}{% if recipe.archived %} <span class="badge cancelled">Archived</span>{% endif %}</h1>
+    <p class="muted sub">Serves {{ recipe.servings|plain }} &middot; {{ summary.serving_grams|number(0) }} g a serving{% if used %} &middot; used in {{ used }} meal plan item{{ "" if used == 1 else "s" }}{% endif %}</p>
+  </div>
+  <a class="button quiet" href="/recipes">All recipes</a>
+</div>
+<div class="recipe-layout">
+  <div>
+    {% include "_recipe_items.html" %}
+  </div>
+  <section class="card">
+    <h2>Details</h2>
+    {% if errors %}<div class="notice error" role="alert">{% for e in errors %}<p>{{ e }}</p>{% endfor %}</div>{% endif %}
+    <form method="post" action="/recipes/{{ recipe.id }}">
+      <div class="field"><label for="name">Name</label><input id="name" name="name" value="{{ values.name }}" required></div>
+      <div class="grid">
+        <div class="field"><label for="servings">Servings it makes</label><input id="servings" name="servings" value="{{ values.servings|plain if values.servings else '' }}" inputmode="decimal" required></div>
+        <div class="field"><label for="cooked_grams">Cooked weight, g <span class="muted">(optional)</span></label><input id="cooked_grams" name="cooked_grams" value="{{ values.cooked_grams|plain if values.cooked_grams else '' }}" inputmode="decimal"></div>
+      </div>
+      <p class="hint">The cooked weight only changes the size of a serving in grams. The nutrients come from the ingredients as weighed.</p>
+      <div class="field"><label for="tags">Tags <span class="muted">(separate with commas)</span></label><input id="tags" name="tags" value="{{ values.tags }}" placeholder="breakfast, vegetarian"></div>
+      <div class="field"><label for="method">Method</label><textarea id="method" name="method" rows="8">{{ values.method }}</textarea></div>
+      <div class="field"><label for="notes">Notes for the client <span class="muted">(optional)</span></label><textarea id="notes" name="notes" rows="3">{{ values.notes }}</textarea></div>
+      <div class="actions"><button type="submit">Save</button></div>
+    </form>
+    <div class="actions aside">
+      <form method="post" action="/recipes/{{ recipe.id }}/duplicate"><button class="quiet small" type="submit">Duplicate</button></form>
+      <form method="post" action="/recipes/{{ recipe.id }}/archive"><button class="quiet small" type="submit">{{ "Restore" if recipe.archived else "Archive" }}</button></form>
+      {% if not used %}<form method="post" action="/recipes/{{ recipe.id }}/delete"><button class="link danger-text" type="submit" data-confirm="Delete this recipe?">Delete</button></form>{% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}
