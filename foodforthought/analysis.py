@@ -7,6 +7,7 @@ from . import fmt, reference
 from .nutrients import BY_KEY, KCAL_PER_GRAM, NUTRIENTS
 
 MISSING_LIMIT = 0.2
+SOURCE_LIMIT = 6
 MIN_DAYS = 3
 STATES = {
     "below_lrni": "Low intake: below the LRNI",
@@ -21,6 +22,23 @@ def _percent(part: float, whole: float) -> float | None:
     return part / whole * 100 if whole else None
 
 
+def _name(entry) -> str:
+    keys = entry.keys()
+    return (entry["name"] if "name" in keys else "") or "Unnamed food"
+
+
+def top_sources(amounts: dict, total: float, days: int = 1, scale: float = 1.0, limit: int = SOURCE_LIMIT) -> list[dict]:
+    if total <= 0:
+        return []
+    ranked = sorted(((name, value) for name, value in amounts.items() if value > 0), key=lambda item: -item[1])
+    rows = [{"name": name, "amount": value / (days or 1) * scale, "share": value / total} for name, value in ranked[:limit]]
+    rest = sum(value for _, value in ranked[limit:])
+    if rest > 0:
+        others = len(ranked) - limit
+        rows.append({"name": f"{others} other food{'' if others == 1 else 's'}", "amount": rest / (days or 1) * scale, "share": rest / total})
+    return rows
+
+
 def analyse(entries: list, declared_days: list[str], group: reference.Group | None, weight_kg: float | None, target) -> dict:
     days = sorted({entry["day"] for entry in entries})
     count = len(days)
@@ -30,6 +48,7 @@ def analyse(entries: list, declared_days: list[str], group: reference.Group | No
     gap_count = dict.fromkeys(keys, 0)
     per_day = {day: {"entries": 0, **dict.fromkeys(("energy_kcal", "protein", "fat", "carbohydrate"), 0.0)} for day in days}
     total_energy = 0.0
+    found_in = {key: {} for key in keys}
     for entry in entries:
         nutrients = json.loads(entry["nutrients"]) if isinstance(entry["nutrients"], str) else entry["nutrients"]
         factor = entry["grams"] / 100
@@ -43,6 +62,8 @@ def analyse(entries: list, declared_days: list[str], group: reference.Group | No
                 gap_count[key] += 1
                 continue
             totals[key] += value * factor
+            name = _name(entry)
+            found_in[key][name] = found_in[key].get(name, 0.0) + value * factor
             if key in per_day[entry["day"]]:
                 per_day[entry["day"]][key] += value * factor
     average = {key: totals[key] / count if count else 0.0 for key in keys}
@@ -51,6 +72,9 @@ def analyse(entries: list, declared_days: list[str], group: reference.Group | No
     energy = average["energy_kcal"]
     food_energy = energy - average["alcohol"] * KCAL_PER_GRAM["alcohol"]
     salt = average["sodium"] * 2.5 / 1000
+
+    def sources(key: str, scale: float = 1.0) -> list[dict]:
+        return top_sources(found_in[key], totals[key], count, scale)
 
     def macro(key: str, label: str, value: float, unit: str, share: float | None, guidance: str = "", state: str = "", target_value=None) -> dict:
         return {
@@ -64,6 +88,7 @@ def analyse(entries: list, declared_days: list[str], group: reference.Group | No
             "gap_count": gap_count.get(key, 0),
             "gap_share": gap_share.get(key, 0.0),
             "target": target_value,
+            "sources": sources(key, 2.5 / 1000 if key == "sodium" else 1.0) if key in found_in else [],
         }
 
     macros = [
@@ -148,6 +173,7 @@ def analyse(entries: list, declared_days: list[str], group: reference.Group | No
             "percent_rni": _percent(value, ref["rni"]) if ref else None,
             "gap_count": gap_count[key],
             "gap_share": gap_share[key],
+            "sources": sources(key),
         }
         if not ref:
             row["state"] = "no_reference"

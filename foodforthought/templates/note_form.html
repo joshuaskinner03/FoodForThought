@@ -11,8 +11,15 @@
     {% endfor %}
   </p>
   {% endif %}
-  <form method="post" action="{{ '/clients/%d/notes/%d/edit' % (client.id, note.id) if note else '/clients/%d/notes/new' % client.id }}">
+  {% if restored %}
+  <div class="notice">
+    <p>This is your unsaved note, kept {{ restored|local_stamp }}. Save it to keep it.</p>
+    <form method="post" action="/clients/{{ client.id }}/notes/draft/discard"><input type="hidden" name="note_id" value="{{ note.id if note else '' }}"><button class="link danger-text" type="submit" data-confirm="Throw away the unsaved changes?">Throw it away</button></form>
+  </div>
+  {% endif %}
+  <form method="post" action="{{ '/clients/%d/notes/%d/edit' % (client.id, note.id) if note else '/clients/%d/notes/new' % client.id }}" data-autosave="/clients/{{ client.id }}/notes/draft">
     <input type="hidden" name="appointment_id" value="{{ values.appointment_id }}">
+    <input type="hidden" name="note_id" value="{{ note.id if note else '' }}">
     <div class="grid">
       {{ date_input("Date", "note_date", values.note_date, required=true) }}
       <div class="field">
@@ -27,7 +34,9 @@
     <div class="actions">
       <button type="submit">Save note</button>
       <a href="/clients/{{ client.id }}/notes">Cancel</a>
+      <span class="hint" data-autosave-status aria-live="polite"></span>
     </div>
+    <p class="hint">What you type is kept as you go, so nothing is lost if FoodForThought locks itself. It becomes part of the record when you press Save note.</p>
   </form>
 </section>
 {% endblock %}

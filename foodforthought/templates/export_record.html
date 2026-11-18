@@ -94,6 +94,11 @@ article { margin: 1rem 0; padding-bottom: 0.6rem; border-bottom: 1px solid #e3e3
 </article>
 {% else %}<p class="muted">None.</p>{% endfor %}
 
+{% if record.note_drafts %}
+<h2>Unsaved note drafts</h2>
+{% for item in record.note_drafts %}<article><h3>{{ item.note_date|nice_date }}{% if item.title %}: {{ item.title }}{% endif %}</h3><p class="pre">{{ item.body }}</p></article>{% endfor %}
+{% endif %}
+
 <h2>Meal plans</h2>
 {% for item in record.meal_plans %}
 <article>

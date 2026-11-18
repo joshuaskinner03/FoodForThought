@@ -3,12 +3,11 @@
 Free, open-source, local-only practice management for a private nutritionist.
 One user, one device, no cloud.
 
-**Status: Phase 2, step 3.** Working now: everything in Phase 1 (client
-records, diary, notes, forms, consent, files, measurements, invoices, letters,
-export and erasure, backup), the food database, energy and macronutrient
-targets, food diaries with intake analysis, and recipes and meal plans. Still
-to come: an optional portion optimiser for meal plans, and optional local AI
-drafting (Phase 3).
+**Status: Phases 1 and 2 complete.** Client records, diary, notes, forms,
+consent, files, measurements, invoices, letters, export and erasure, backup,
+the food database, energy and macronutrient targets, food diaries with intake
+analysis, recipes, meal plans and a portion optimiser. Local AI (Phase 3) is
+not planned.
 
 ## Run it
 
@@ -202,6 +201,10 @@ give no figures for weight lost in cooking. An ingredient can have a "Shown
 as" name for the client. A recipe used in a plan cannot be deleted, only
 archived.
 
+In the diary analysis, a plan's *Nutrition* page and a recipe's per-serving
+table, pointing at (or tapping) a nutrient lists the foods it comes from, with
+the amount and share of each.
+
 A client's *Meal plans* tab holds plans of 1 to 14 days, optionally with a
 start date. Each meal takes recipes (by servings) and foods (by weight or
 portion). The plan page shows each day's energy and macronutrients against
@@ -211,6 +214,15 @@ every food across the plan, grouped by food type. The PDF holds the
 introduction, the days, the recipes used and the shopping list, and can
 leave out the energy figures. *Save a copy as a template* keeps the meals
 without the client or dates, under Recipes → Meal plan templates.
+
+*Suggest portions* on a plan day changes only the amounts already in it, to
+bring energy, protein, fat and carbohydrate closer to the client's targets.
+It finds the scale for each item that minimises the weighted squared gaps
+from the targets (energy counts most), within a limit you choose (a quarter,
+a half, or half to double), with a small pull towards leaving amounts as they
+are; then rounds to 5 g steps, half portions and quarter servings. The same
+plan always gives the same suggestion. You choose which suggestions to use,
+and can keep any item as it is.
 
 ### Energy equations
 
@@ -270,6 +282,10 @@ their accountant.
   network requests, except when you press *Check for updates* or *Update and
   restart*, which run `git` to fetch the program from GitHub. Nothing is
   sent about you or your clients.
+- A session note is kept as you type, in the encrypted database, so nothing
+  is lost if the app locks itself. It is listed on Home and on the client's
+  Notes tab until you save it or throw it away, and is part of the client's
+  export and erasure.
 - The service worker that lets Chrome install it as an app stores only the
   "not running" page, the style sheet and the icon. It never stores pages
   with client details.

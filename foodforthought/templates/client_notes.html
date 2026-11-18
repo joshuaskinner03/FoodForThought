@@ -4,6 +4,9 @@
   <h2>Session notes</h2>
   <a class="button small" href="/clients/{{ client.id }}/notes/new">New note</a>
 </div>
+{% for d in drafts %}
+<p class="warn">Unsaved {{ "changes to a note" if d.note_id else "new note" }}{% if d.title %}, "{{ d.title }}"{% endif %}, kept {{ d.updated_at|local_stamp }}. <a href="/clients/{{ client.id }}/notes/{{ d.note_id ~ '/edit' if d.note_id else 'new' }}">Carry on writing</a></p>
+{% endfor %}
 {% for n in notes %}
 <article class="card note" id="note-{{ n.id }}">
   <div class="card-head">

@@ -4,6 +4,7 @@
     <section class="card plan-day" id="day-{{ d.n }}">
       <div class="card-head">
         <h3>{{ d.long }}</h3>
+        {% if target and d.count %}<a class="small-link" href="/meal-plans/{{ plan.id }}/days/{{ d.n }}/portions">Suggest portions</a>{% endif %}
         <span class="muted">{% if d.count %}{{ d.totals.energy_kcal.value|number(0) }} kcal{% if target %} ({{ (d.totals.energy_kcal.value / target.energy_kcal * 100)|number(0) }}% of target){% endif %} &middot; protein {{ d.totals.protein.value|number(0) }} g{% else %}Nothing planned yet{% endif %}</span>
       </div>
       {% for m in d.meals if m["items"] %}

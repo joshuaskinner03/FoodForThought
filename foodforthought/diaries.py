@@ -588,7 +588,7 @@ def router(web: Web) -> APIRouter:
         days = declared_days(diary)
         last_day = max([days[-1], *[row["day"] for row in db().query("SELECT DISTINCT day FROM diary_entry WHERE diary_id = ?", (diary_id,))]])
         entries = db().query(
-            "SELECT e.day, e.grams, f.nutrients FROM diary_entry e JOIN food f ON f.id = e.food_id "
+            "SELECT e.day, e.grams, f.nutrients, f.name FROM diary_entry e JOIN food f ON f.id = e.food_id "
             "WHERE e.diary_id = ? AND e.status = 'confirmed' AND e.grams IS NOT NULL",
             (diary_id,),
         )

@@ -53,6 +53,9 @@ def router(web: Web) -> APIRouter:
             data_dir=str(cfg.data_dir),
             last_backup=web.db.get_setting("last_backup"),
             auto_lock=core.auto_lock_minutes,
+            drafts=web.db.query(
+                "SELECT d.*, c.first_name, c.last_name FROM note_draft d JOIN client c ON c.id = d.client_id ORDER BY d.updated_at DESC"
+            ),
         )
 
     @r.get("/setup")

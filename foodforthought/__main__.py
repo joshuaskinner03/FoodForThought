@@ -60,6 +60,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.launch:
         launcher.log_to(cfg.data_dir / "app.log")
+    launcher.refresh_icons()
 
     app = create_app(cfg)
     print(f"FoodForThought {__version__}")
