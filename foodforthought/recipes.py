@@ -5,7 +5,7 @@ import json
 from fastapi import APIRouter, Depends, Request
 from starlette.datastructures import FormData
 
-from . import fmt, foods
+from . import analysis, fmt, foods
 from .audit import now_iso
 from .db import Database
 from .nutrients import NUTRIENTS
@@ -99,7 +99,22 @@ def summary(db: Database, recipe: dict, found: list[dict] | None = None) -> dict
         "serving_grams": made / servings if servings else 0,
         "per_serving": scale(whole, 1 / servings),
         "whole": whole,
+        "sources": ingredient_sources(found, whole, servings),
     }
+
+
+def ingredient_sources(found: list[dict], whole: dict, servings: float) -> dict:
+    result = {}
+    for nutrient in NUTRIENTS:
+        amounts: dict[str, float] = {}
+        for item in found:
+            value = decode(item["nutrients"]).get(nutrient.key)
+            if value is not None:
+                name = item.get("label") or item["food_name"]
+                amounts[name] = amounts.get(name, 0.0) + value * item["grams"] / 100
+        result[nutrient.key] = analysis.top_sources(amounts, whole[nutrient.key]["value"], 1, 1 / (servings or 1))
+    result["salt"] = [dict(row, amount=row["amount"] * 2.5 / 1000) for row in result.get("sodium", [])]
+    return result
 
 
 def salt(values: dict) -> dict:

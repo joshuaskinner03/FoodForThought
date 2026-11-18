@@ -67,7 +67,7 @@ def plan_items(db: Database, plan_id: int) -> list[dict]:
 
 
 def entries(found: list[dict]) -> list[dict]:
-    return [{"day": f"{item['day']:02d}", "grams": part["grams"], "nutrients": part["nutrients"]} for item in found for part in item["parts"]]
+    return [{"day": f"{item['day']:02d}", "grams": part["grams"], "nutrients": part["nutrients"], "name": part["food_name"]} for item in found for part in item["parts"]]
 
 
 def by_day(plan: dict, found: list[dict]) -> list[dict]:

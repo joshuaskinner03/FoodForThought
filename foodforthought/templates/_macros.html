@@ -77,3 +77,9 @@
   {% endif %}
 {% endfor %}
 {% endmacro %}
+
+{% macro source_tip(label, sources, unit, places=1) -%}
+{%- if sources -%}
+<span class="source-tip" tabindex="0">{{ label }}<span class="tip" role="tooltip"><span class="tip-head">Main sources</span>{% for s in sources %}<span class="tip-row"><span>{{ s.name }}</span><span class="tip-n">{{ s.amount|number(places) }} {{ unit }} &middot; {{ (s.share * 100)|number(0) }}%</span></span>{% endfor %}</span></span>
+{%- else -%}{{ label }}{%- endif -%}
+{%- endmacro %}

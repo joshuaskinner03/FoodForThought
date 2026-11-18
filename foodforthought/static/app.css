@@ -454,3 +454,12 @@ ul.shopping li { display: flex; justify-content: space-between; gap: 1rem; paddi
 @media (max-width: 900px) { .recipe-layout, .plan-layout { grid-template-columns: 1fr; } .plan-side { position: static; } }
 table.compact th, table.compact td { padding: 0.3rem 0.3rem; font-size: 0.86rem; white-space: nowrap; }
 .plan-side .card { overflow-x: auto; }
+
+.source-tip { position: relative; border-bottom: 1px dotted var(--muted); cursor: help; }
+.source-tip:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.source-tip .tip { display: none; position: absolute; left: 0; top: calc(100% + 6px); z-index: 30; width: max-content; min-width: 16rem; max-width: 26rem; background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14); padding: 0.55rem 0.75rem; font-weight: 400; text-align: left; white-space: normal; }
+.source-tip:hover .tip, .source-tip:focus .tip { display: block; }
+.tip-head { display: block; font-weight: 600; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.25rem; }
+.tip-row { display: flex; justify-content: space-between; gap: 1.2rem; font-size: 0.9rem; padding: 0.12rem 0; }
+.tip-n { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--muted); }
+@media print { .source-tip .tip { display: none !important; } .source-tip { border: 0; } }

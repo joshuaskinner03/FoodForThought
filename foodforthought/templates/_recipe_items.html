@@ -1,3 +1,4 @@
+{% from "_macros.html" import source_tip %}
 <div id="recipe-items">
   {% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
   {% include "_recipe_item_form.html" %}
@@ -31,9 +32,9 @@
         {% set labels = {"energy_kcal": "Energy", "protein": "Protein", "fat": "Fat", "saturates": "of which saturates", "carbohydrate": "Carbohydrate", "sugars": "of which sugars", "fibre": "Fibre"} %}
         {% for key in summary_keys %}
         {% set v = summary.per_serving[key] %}
-        <tr><td>{{ labels[key] }}</td><td class="n">{{ v.value|number(0 if key == "energy_kcal" else 1) }} {{ "kcal" if key == "energy_kcal" else "g" }}{% if v.gap %}*{% endif %}</td></tr>
+        <tr><td>{{ source_tip(labels[key], summary.sources[key], "kcal" if key == "energy_kcal" else "g", 0 if key == "energy_kcal" else 1) }}</td><td class="n">{{ v.value|number(0 if key == "energy_kcal" else 1) }} {{ "kcal" if key == "energy_kcal" else "g" }}{% if v.gap %}*{% endif %}</td></tr>
         {% endfor %}
-        <tr><td>Salt</td><td class="n">{{ salt.value|number(2) }} g{% if salt.gap %}*{% endif %}</td></tr>
+        <tr><td>{{ source_tip("Salt", summary.sources.salt, "g", 2) }}</td><td class="n">{{ salt.value|number(2) }} g{% if salt.gap %}*{% endif %}</td></tr>
       </tbody>
     </table>
     <details>
@@ -41,7 +42,7 @@
       <table class="numbers">
         <tbody>
           {% for n in nutrients %}{% set v = summary.per_serving[n.key] %}
-          <tr><td>{{ n.label }}</td><td class="n">{{ v.value|number(n.places) }} {{ n.unit }}{% if v.gap %}*{% endif %}</td></tr>
+          <tr><td>{{ source_tip(n.label, summary.sources[n.key], n.unit, n.places) }}</td><td class="n">{{ v.value|number(n.places) }} {{ n.unit }}{% if v.gap %}*{% endif %}</td></tr>
           {% endfor %}
         </tbody>
       </table>

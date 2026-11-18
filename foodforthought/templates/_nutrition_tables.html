@@ -1,10 +1,11 @@
+{% from "_macros.html" import source_tip %}
   <h3>Energy and macronutrients, average per day</h3>
   <table class="numbers analysis">
     <thead><tr><th>Nutrient</th><th>Average</th><th>% of energy</th>{% if target %}<th>Target</th>{% endif %}<th>Recommendation</th><th>Compared</th></tr></thead>
     <tbody>
       {% for m in result.macros %}
       <tr>
-        <td>{{ m.label }}{% if m.detail %}<br><span class="hint">{{ m.detail }}</span>{% endif %}</td>
+        <td>{{ source_tip(m.label, m.sources, m.unit, 0 if m.unit == "kcal" else 1) }}{% if m.detail %}<br><span class="hint">{{ m.detail }}</span>{% endif %}</td>
         <td class="n">{{ m.value|number(0 if m.unit == "kcal" else 1) }} {{ m.unit }}{% if m.gap_count %}<span class="gap" title="{{ m.gap_count }} entries have no value for this">*</span>{% endif %}</td>
         <td>{% if m.share is not none %}{{ m.share|number(0) }}%{% endif %}</td>
         {% if target %}<td>{% if m.target is not none %}{{ m.target|number(0) }} {{ m.unit }} ({{ (m.value / m.target * 100)|number(0) }}%){% endif %}</td>{% endif %}
@@ -14,6 +15,7 @@
       {% endfor %}
     </tbody>
   </table>
+  <p class="hint no-print">Point at a nutrient, or tap it, to see which foods it comes from.</p>
   <p class="hint">Fat and saturates are shown as a share of food energy, which leaves out alcohol; carbohydrate and sugars as a share of total energy. Carbohydrate is in monosaccharide equivalents, as in the food tables.</p>
 
   <h3>Vitamins and minerals, average per day</h3>
@@ -22,7 +24,7 @@
     <tbody>
       {% for n in result.micros %}
       <tr class="{{ n.state }}">
-        <td>{{ n.label }}</td>
+        <td>{{ source_tip(n.label, n.sources, n.unit, n.places) }}</td>
         <td class="n">{{ n.value|number(n.places) }} {{ n.unit }}{% if n.gap_count %}<span class="gap" title="{{ n.gap_count }} entries, {{ (n.gap_share * 100)|number(0) }}% of energy, have no value for this">*</span>{% endif %}</td>
         <td>{% if n.lrni is not none %}{{ n.lrni|plain }}{% else %}<span class="muted">none</span>{% endif %}</td>
         <td>{% if n.rni is not none %}{{ n.rni|plain }}{% if n.raised %}<span class="gap" title="Includes the increase for pregnancy or breastfeeding">†</span>{% endif %}{% endif %}</td>
