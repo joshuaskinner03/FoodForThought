@@ -9,9 +9,9 @@ Do these in order. Note anything that differs from "Expect".
 2. **Share a folder.** In the Files app, open Google Drive (or a USB stick),
    make a folder called "FoodForThought backups", right-click it and choose
    Share with Linux.
-3. **Turn on automatic backups.** Settings → Automatic backups. Click in
-   the Folder box: expect the shared folder in the suggestions, under
-   /mnt/chromeos. Choose it, keep 14, and press Turn on and back up now.
+3. **Turn on automatic backups.** Settings → Automatic backups. Under
+   "Folders shared with Linux", find your folder (for example My files ›
+   Downloads › FoodForThought backups) and press Use this folder.
    In the Files app, expect a .fftbackup file in the folder.
 4. **Next day.** Unlock FoodForThought the next day and check a second file
    appears within a few minutes.

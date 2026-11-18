@@ -484,3 +484,6 @@ html.spacing-relaxed body { line-height: 1.75; }
 html.spacing-relaxed p, html.spacing-relaxed li { margin-bottom: 0.6em; }
 html.spacing-loose body { line-height: 2; letter-spacing: 0.015em; word-spacing: 0.08em; }
 html.spacing-loose p, html.spacing-loose li { margin-bottom: 0.8em; }
+.folder-picks { list-style: none; margin: 0; padding: 0; }
+.folder-picks li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.45rem 0; border-bottom: 1px solid var(--line); }
+.folder-picks code { font-size: 0.82rem; }

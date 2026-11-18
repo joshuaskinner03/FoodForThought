@@ -141,7 +141,8 @@ def router(web: Web) -> APIRouter:
         return settings_page(request)
 
     @r.post("/settings/auto-backup")
-    def save_auto_backup(request: Request, folder: str = Form(""), keep: str = Form("14"), _: None = unlocked):
+    def save_auto_backup(request: Request, folder: str = Form(""), pick: str = Form(""), keep: str = Form("14"), _: None = unlocked):
+        folder = pick or folder
         try:
             chosen = autobackup.check_folder(cfg, folder)
         except autobackup.BackupFolderProblem as exc:
