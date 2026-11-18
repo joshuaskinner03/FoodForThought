@@ -12,7 +12,7 @@ from fastapi.responses import PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException
 
-from . import account, clients, diaries, diary, foods, forms, invoices, letters, measurements, notes, practice, privacy, pwa, targets, updates
+from . import account, clients, diaries, diary, foods, forms, invoices, letters, meal_plans, measurements, notes, practice, privacy, pwa, recipes, targets, updates
 from .config import Config, default_data_dir
 from .core import Core
 from .web import COOKIE, PKG, Redirect, Web
@@ -98,7 +98,7 @@ def create_app(cfg: Config | None = None, clock: Callable[[], float] = time.mono
     async def on_bad_request(request: Request, _: RequestValidationError):
         return web.page(request, "error.html", status_code=404, detail="That page does not exist.")
 
-    for feature in (pwa, account, practice, clients, diary, notes, forms, measurements, targets, diaries, invoices, letters, privacy, foods, updates):
+    for feature in (pwa, account, practice, clients, diary, notes, forms, measurements, targets, diaries, meal_plans, invoices, letters, privacy, foods, recipes, updates):
         app.include_router(feature.router(web))
 
     return app

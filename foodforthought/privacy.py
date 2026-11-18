@@ -77,6 +77,22 @@ def collect(web: Web, client_id: int) -> dict:
         }
         for invoice in invoices.load(db, "WHERE client_id = ?", (client_id,))
     ]
+    record["meal_plans"] = []
+    for plan in db.query("SELECT * FROM meal_plan WHERE client_id = ? ORDER BY created_at, id", (client_id,)):
+        items = db.query(
+            "SELECT i.day, i.meal, i.servings, i.grams, i.label, r.name AS recipe, f.name AS food FROM meal_plan_item i "
+            "LEFT JOIN recipe r ON r.id = i.recipe_id LEFT JOIN food f ON f.id = i.food_id WHERE i.plan_id = ? ORDER BY i.day, i.position, i.id",
+            (plan["id"],),
+        )
+        record["meal_plans"].append(
+            {
+                "title": plan["title"],
+                "days": plan["days"],
+                "start_date": plan["start_date"],
+                "intro": plan["intro"],
+                "items": [dict(row) for row in items],
+            }
+        )
     record["food_diaries"] = []
     for diary in db.query("SELECT * FROM food_diary WHERE client_id = ? ORDER BY start_date, id", (client_id,)):
         entries = db.query(
@@ -179,6 +195,7 @@ def router(web: Web) -> APIRouter:
                 ("measurements", "measurement"),
                 ("letters", "letter"),
                 ("food diaries", "food_diary"),
+                ("meal plans", "meal_plan"),
                 ("sets of targets", "target"),
                 ("consent records", "consent"),
                 ("files", "attachment"),

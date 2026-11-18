@@ -441,3 +441,16 @@ table.analysis th:nth-child(5) { text-align: left; }
 .offline { text-align: center; }
 .offline img { display: block; margin: 0 auto 0.5rem; border-radius: 14px; }
 .update-status .steps { margin: 0.5rem 0; padding-left: 1.2rem; }
+
+.recipe-layout { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1rem; align-items: start; }
+.plan-layout { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1rem; align-items: start; }
+.plan-side { position: sticky; top: 0.5rem; }
+.plan-day h4 { margin: 0.8rem 0 0.2rem; font-size: 0.95rem; color: var(--muted); }
+.plan-tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; margin-top: 1rem; }
+.plan-tools .option { display: block; margin: 0.3rem 0; }
+tr.target-row td { font-weight: 600; border-top: 2px solid var(--line); }
+ul.shopping { list-style: none; margin: 0 0 0.8rem; padding: 0; }
+ul.shopping li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.3rem 0; border-bottom: 1px solid var(--line); }
+@media (max-width: 900px) { .recipe-layout, .plan-layout { grid-template-columns: 1fr; } .plan-side { position: static; } }
+table.compact th, table.compact td { padding: 0.3rem 0.3rem; font-size: 0.86rem; white-space: nowrap; }
+.plan-side .card { overflow-x: auto; }

@@ -1,0 +1,22 @@
+{% extends layout %}
+{% from "_macros.html" import date_input %}
+{% block tab %}
+<section class="card">
+  <h2>Plan details</h2>
+  {% if errors %}<div class="notice error" role="alert">{% for e in errors %}<p>{{ e }}</p>{% endfor %}</div>{% endif %}
+  <form method="post" action="/meal-plans/{{ plan.id }}/settings">
+    <div class="grid">
+      <div class="field"><label for="title">Title</label><input id="title" name="title" value="{{ values.title }}" required></div>
+      <div class="field"><label for="days">Days</label><input id="days" name="days" type="number" min="1" max="{{ max_days }}" value="{{ values.days }}" required></div>
+      {% if plan.client_id %}{{ date_input("Starts on (optional)", "start_date", values.start_date) }}{% endif %}
+    </div>
+    <p class="hint">Making the plan shorter removes the days after the new last day.</p>
+    <div class="field"><label for="intro">Introduction for the client <span class="muted">(shown at the top of the PDF)</span></label><textarea id="intro" name="intro" rows="5">{{ values.intro }}</textarea></div>
+    <label class="option"><input type="checkbox" name="show_figures"{% if values.show_figures %} checked{% endif %}> Show energy and protein figures in the PDF by default</label>
+    <div class="actions"><button type="submit">Save</button><a href="/meal-plans/{{ plan.id }}">Back to the plan</a></div>
+  </form>
+</section>
+<form class="aside" method="post" action="/meal-plans/{{ plan.id }}/delete">
+  <button class="link danger-text" type="submit" data-confirm="Delete this meal plan? Saved PDFs stay in the client's files.">Delete this meal plan</button>
+</form>
+{% endblock %}

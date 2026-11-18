@@ -1,0 +1,17 @@
+{% extends layout %}
+{% block tab %}
+<div class="card-head no-print">
+  <h2>Shopping list: {{ plan.title }}</h2>
+  <span class="row-actions"><a href="/meal-plans/{{ plan.id }}">Open plan</a><button class="quiet small" type="button" data-print>Print</button></span>
+</div>
+<section class="card printable">
+  <h2 class="print-only">Shopping list: {{ plan.title }}</h2>
+  {% for g in groups %}
+  <h3>{{ g.name }}</h3>
+  <ul class="shopping">{% for row in g.rows %}<li><span>{{ row.name }}</span><span class="muted">{{ row.shown }}</span></li>{% endfor %}</ul>
+  {% else %}
+  <p class="muted">Nothing is planned yet.</p>
+  {% endfor %}
+  <p class="hint">Amounts are for the whole plan, as weighed for eating or cooking. Allow extra for peel, bones and waste.</p>
+</section>
+{% endblock %}

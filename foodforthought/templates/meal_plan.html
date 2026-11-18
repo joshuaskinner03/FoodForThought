@@ -1,0 +1,47 @@
+{% extends layout %}
+{% block tab %}
+<div class="card-head">
+  <div>
+    <h2>{{ plan.title }}</h2>
+    <p class="muted sub">{{ plan.days }} day{{ "" if plan.days == 1 else "s" }}{% if plan.start_date %} from {{ plan.start_date|nice_date }}{% endif %}{% if target %} &middot; target {{ target.energy_kcal|number(0) }} kcal a day{% endif %}</p>
+  </div>
+  <span class="row-actions">
+    <a href="/meal-plans/{{ plan.id }}/nutrition">Nutrition</a>
+    <a href="/meal-plans/{{ plan.id }}/shopping">Shopping list</a>
+    <a href="/meal-plans/{{ plan.id }}/settings">Plan details</a>
+  </span>
+</div>
+{% include "_plan_panel.html" %}
+<div class="plan-tools">
+  <section class="card">
+    <h3>Copy a day</h3>
+    <form method="post" action="/meal-plans/{{ plan.id }}/copy-day" class="grid">
+      <div class="field"><label for="copy-from">Copy</label><select id="copy-from" name="from">{% for d in labels %}<option value="{{ d.n }}">{{ d.label }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="copy-to">To</label><select id="copy-to" name="to">{% for d in labels %}<option value="{{ d.n }}"{% if loop.index == 2 %} selected{% endif %}>{{ d.label }}</option>{% endfor %}</select></div>
+      <label class="option"><input type="checkbox" name="replace" checked> Replace what is there</label>
+      <div class="actions"><button class="quiet" type="submit">Copy</button></div>
+    </form>
+  </section>
+  <section class="card">
+    <h3>PDF for the client</h3>
+    <form method="get" action="/meal-plans/{{ plan.id }}/pdf">
+      <label class="option"><input type="checkbox" name="recipes" value="1" checked> Recipes used</label>
+      <label class="option"><input type="checkbox" name="shopping" value="1" checked> Shopping list</label>
+      <label class="option"><input type="checkbox" name="figures" value="1"{% if plan.show_figures %} checked{% endif %}> Energy and protein figures</label>
+      <div class="actions">
+        <button type="submit">Download PDF</button>
+        {% if plan.client_id %}<button class="quiet" type="submit" formmethod="post" formaction="/meal-plans/{{ plan.id }}/pdf/save">Save to client's files</button>{% endif %}
+      </div>
+    </form>
+  </section>
+  <section class="card">
+    <h3>Reuse</h3>
+    {% if plan.client_id %}
+    <form method="post" action="/meal-plans/{{ plan.id }}/save-template"><button class="quiet" type="submit">Save a copy as a template</button></form>
+    <p class="hint">The template keeps the meals but not the client or the dates.</p>
+    {% else %}
+    <p class="hint">To use this for a client, open their Meal plans tab and start a plan from this template.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

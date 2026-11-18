@@ -1,0 +1,32 @@
+<form id="entry-form" class="card entry-form" method="post" action="/recipes/{{ recipe.id }}/items"
+      hx-post="/recipes/{{ recipe.id }}/items" hx-target="#recipe-items" hx-swap="outerHTML">
+  <h2>Add an ingredient</h2>
+  {% if chosen %}
+  <input type="hidden" name="food_id" value="{{ chosen.id }}">
+  <p class="chosen">
+    <strong>{{ chosen.name }}</strong>
+    <span class="muted">{{ chosen.nutrients.get("energy_kcal")|number(0) }} kcal per 100 g</span>
+    <a href="/recipes/{{ recipe.id }}" hx-get="/recipes/{{ recipe.id }}/item-form" hx-target="#entry-form" hx-swap="outerHTML">Choose another</a>
+  </p>
+  <div class="grid">
+    <div class="field"><label for="amount">Amount</label><input id="amount" name="amount" inputmode="decimal" autocomplete="off" required autofocus></div>
+    <div class="field">
+      <label for="unit">Unit</label>
+      <select id="unit" name="unit">
+        <option value="g">grams</option>
+        {% for p in portions %}<option value="portion:{{ p.id }}">{{ p.name }} ({{ p.grams|plain }} g)</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="field"><label for="label">Shown as <span class="muted">(optional, for the client)</span></label><input id="label" name="label" placeholder="for example: rolled oats"></div>
+  <div class="actions"><button type="submit">Add</button></div>
+  {% else %}
+  <div class="field">
+    <label for="food-search">Food</label>
+    <input id="food-search" type="search" name="q" placeholder="Type to search, for example: oats" autocomplete="off" autofocus
+           data-pick-first="#food-choices .choice-list"
+           hx-get="/recipes/{{ recipe.id }}/food-choices" hx-trigger="input changed delay:200ms, search" hx-target="#food-choices" hx-swap="innerHTML" hx-include="this">
+  </div>
+  <div id="food-choices" class="choices" aria-live="polite"></div>
+  {% endif %}
+</form>

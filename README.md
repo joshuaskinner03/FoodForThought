@@ -3,11 +3,12 @@
 Free, open-source, local-only practice management for a private nutritionist.
 One user, one device, no cloud.
 
-**Status: Phase 2, step 2 of 3.** Working now: everything in Phase 1 (client
+**Status: Phase 2, step 3.** Working now: everything in Phase 1 (client
 records, diary, notes, forms, consent, files, measurements, invoices, letters,
 export and erasure, backup), the food database, energy and macronutrient
-targets, and food diaries with intake analysis. Still to come: recipes and
-meal plans (step 3), and optional local AI drafting (Phase 3).
+targets, food diaries with intake analysis, and recipes and meal plans. Still
+to come: an optional portion optimiser for meal plans, and optional local AI
+drafting (Phase 3).
 
 ## Run it
 
@@ -106,6 +107,10 @@ restore.
   Cronometer export. Imported foods are matched to the food tables and each
   match is checked before the diary can be analysed. The analysis compares
   average daily intake with UK reference values (see below).
+- **Recipes and meal plans:** a recipe library with nutrition per serving;
+  meal plans for each client, checked against their targets and the UK
+  reference values; a shopping list; and a PDF with your letterhead for the
+  client. Plans can be saved as templates and reused.
 - **Dates** are typed and shown as day/month/year whatever language Chrome is
   set to.
 
@@ -187,6 +192,26 @@ cannot separate free sugars from total sugars. Supplements are not counted.
 The tables are in `foodforthought/reference.py` and the arithmetic is checked
 in `tests/test_food_diaries.py`.
 
+### Recipes and meal plans
+
+*Recipes* holds the practice's recipe library. Ingredients are added like
+diary entries, as weighed before cooking. Nutrition per serving is the sum
+of the ingredients divided by the number of servings; the optional cooked
+weight only changes the size of a serving in grams, since the food tables
+give no figures for weight lost in cooking. An ingredient can have a "Shown
+as" name for the client. A recipe used in a plan cannot be deleted, only
+archived.
+
+A client's *Meal plans* tab holds plans of 1 to 14 days, optionally with a
+start date. Each meal takes recipes (by servings) and foods (by weight or
+portion). The plan page shows each day's energy and macronutrients against
+the client's latest targets; *Nutrition* gives the full analysis used for
+diaries, with recipes broken into their ingredients; *Shopping list* totals
+every food across the plan, grouped by food type. The PDF holds the
+introduction, the days, the recipes used and the shopping list, and can
+leave out the energy figures. *Save a copy as a template* keeps the meals
+without the client or dates, under Recipes → Meal plan templates.
+
 ### Energy equations
 
 - Henry (2005), weight and height version, kcal a day: men 18 to 29,
@@ -221,7 +246,7 @@ wide margin of error, developed on adults.
 
 *Export* makes an unencrypted zip of one client's whole record: a page to read,
 the same information as JSON, and their files. Food diaries are included,
-with what the client wrote beside each matched food.
+with what the client wrote beside each matched food, and so are meal plans.
 
 *Erase* removes the client and everything attached to them. Issued and voided
 invoices are kept, with the name and address printed on them and their

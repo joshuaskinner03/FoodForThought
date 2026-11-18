@@ -30,46 +30,7 @@
   <p class="warn">No food is recorded on {{ result.empty_days|map("nice_date")|join(", ") }}. Those days are left out of the averages.</p>
   {% endif %}
 
-  <h3>Energy and macronutrients, average per day</h3>
-  <table class="numbers analysis">
-    <thead><tr><th>Nutrient</th><th>Average</th><th>% of energy</th>{% if target %}<th>Target</th>{% endif %}<th>Recommendation</th><th>Compared</th></tr></thead>
-    <tbody>
-      {% for m in result.macros %}
-      <tr>
-        <td>{{ m.label }}{% if m.detail %}<br><span class="hint">{{ m.detail }}</span>{% endif %}</td>
-        <td class="n">{{ m.value|number(0 if m.unit == "kcal" else 1) }} {{ m.unit }}{% if m.gap_count %}<span class="gap" title="{{ m.gap_count }} entries have no value for this">*</span>{% endif %}</td>
-        <td>{% if m.share is not none %}{{ m.share|number(0) }}%{% endif %}</td>
-        {% if target %}<td>{% if m.target is not none %}{{ m.target|number(0) }} {{ m.unit }} ({{ (m.value / m.target * 100)|number(0) }}%){% endif %}</td>{% endif %}
-        <td class="guidance">{{ m.guidance }}</td>
-        <td>{% if m.state == "above" %}<span class="badge unpaid">Above</span>{% elif m.state == "below" %}<span class="badge unpaid">Below</span>{% elif m.state == "within" %}<span class="badge completed">Meets</span>{% endif %}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <p class="hint">Fat and saturates are shown as a share of food energy, which leaves out alcohol; carbohydrate and sugars as a share of total energy. Carbohydrate is in monosaccharide equivalents, as in the food tables.</p>
-
-  <h3>Vitamins and minerals, average per day</h3>
-  <table class="numbers analysis">
-    <thead><tr><th>Nutrient</th><th>Average</th><th>LRNI</th><th>RNI</th><th>% of RNI</th><th>Assessment</th></tr></thead>
-    <tbody>
-      {% for n in result.micros %}
-      <tr class="{{ n.state }}">
-        <td>{{ n.label }}</td>
-        <td class="n">{{ n.value|number(n.places) }} {{ n.unit }}{% if n.gap_count %}<span class="gap" title="{{ n.gap_count }} entries, {{ (n.gap_share * 100)|number(0) }}% of energy, have no value for this">*</span>{% endif %}</td>
-        <td>{% if n.lrni is not none %}{{ n.lrni|plain }}{% else %}<span class="muted">none</span>{% endif %}</td>
-        <td>{% if n.rni is not none %}{{ n.rni|plain }}{% if n.raised %}<span class="gap" title="Includes the increase for pregnancy or breastfeeding">†</span>{% endif %}{% endif %}</td>
-        <td>{% if n.percent_rni is not none %}{{ n.percent_rni|number(0) }}%{% endif %}</td>
-        <td><span class="badge state-{{ n.state }}">{{ n.state_label }}</span></td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <div class="hint notes">
-    <p><strong>How to read this.</strong> The RNI (Reference Nutrient Intake) is enough for about 97.5% of people. The LRNI (Lower Reference Nutrient Intake) is enough for only the 2.5% with the lowest needs, so intake below it is very likely to be too low. Intake between the LRNI and the RNI may be enough for some people and not for others. These describe what was eaten on the diary days, not whether the client is deficient: a diary cannot diagnose a deficiency.</p>
-    <p>* Some entries have no value for this nutrient in the food tables, so the true intake is higher than shown. When those entries carry more than {{ result.missing_limit }}% of the energy, a low intake is not assessed.{% if result.group and result.group.life_stage %} † Includes the increase for pregnancy or breastfeeding; the LRNI shown is the value for women who are not pregnant or breastfeeding, as no separate one is set.{% endif %}</p>
-    {% for note in result.notes %}<p>{{ note }}</p>{% endfor %}
-    <p>Reference values: Public Health England, Government Dietary Recommendations (2016); LRNIs from COMA (1991). Some LRNIs for 11 to 18 year olds are not included because the published figures could not be confirmed.</p>
-  </div>
+  {% set about = "diary" %}{% include "_nutrition_tables.html" %}
 
   <h3>Day by day</h3>
   <table class="numbers">

@@ -13,7 +13,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.pdfmetrics import registerFontFamily
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import Image, KeepTogether, ListFlowable, ListItem, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from . import fmt
 
@@ -33,6 +33,9 @@ STRONG_RIGHT = ParagraphStyle("strong_right", parent=STRONG, alignment=TA_RIGHT)
 NAME = ParagraphStyle("name", parent=RIGHT, fontName=BOLD, fontSize=13, leading=17)
 TITLE = ParagraphStyle("title", parent=BODY, fontName=BOLD, fontSize=20, leading=24)
 LABEL = ParagraphStyle("label", parent=SMALL, fontName=BOLD)
+HEADING = ParagraphStyle("heading", parent=BODY, fontName=BOLD, fontSize=14, leading=18, spaceBefore=8, spaceAfter=4)
+SUBHEADING = ParagraphStyle("subheading", parent=BODY, fontName=BOLD, fontSize=11.5, leading=15, spaceBefore=6, spaceAfter=2)
+GREEN = colors.HexColor("#2f6b4f")
 
 
 def _register_fonts() -> None:
@@ -201,3 +204,89 @@ def letter_pdf(practice: dict, logo: bytes | None, letter: dict) -> bytes:
         if paragraph.strip("\n"):
             story += [Paragraph(_text(paragraph.strip("\n")), BODY), Spacer(1, 4 * mm)]
     return _build(story, letter["subject"] or "Letter", practice["display_name"])
+
+
+def _meal_table(rows: list) -> Table:
+    table = Table(rows, colWidths=[36 * mm, PAGE_WIDTH - 36 * mm])
+    table.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("LINEBELOW", (0, 0), (-1, -1), 0.5, LINE),
+            ]
+        )
+    )
+    table.hAlign = "LEFT"
+    return table
+
+
+def _bullets(lines: list[str]) -> ListFlowable:
+    return ListFlowable(
+        [ListItem(Paragraph(_text(line), BODY), leftIndent=10, value="•") for line in lines],
+        bulletType="bullet", start="•", leftIndent=10, bulletFontName=REGULAR, bulletFontSize=9,
+    )
+
+
+def meal_plan_pdf(practice: dict, logo: bytes | None, plan: dict, client_name: str, days: list, recipes: list, shopping: list, figures: bool) -> bytes:
+    _register_fonts()
+    story = [_letterhead(practice, logo), Spacer(1, 10 * mm), Paragraph(_text(plan["title"]), TITLE)]
+    about = []
+    if client_name:
+        about.append(f"Prepared for {client_name}")
+    if plan["start_date"]:
+        about.append(f"starting {fmt.long_date(plan['start_date'])}")
+    if about:
+        story += [Spacer(1, 2 * mm), Paragraph(_text(", ".join(about)), SMALL)]
+    story.append(Spacer(1, 5 * mm))
+    for paragraph in (plan["intro"] or "").split("\n\n"):
+        if paragraph.strip():
+            story += [Paragraph(_text(paragraph.strip()), BODY), Spacer(1, 3 * mm)]
+    for day in days:
+        rows = []
+        for meal in day["meals"]:
+            if not meal["items"]:
+                continue
+            lines = []
+            for item in meal["items"]:
+                line = f"{item['name']}: {item['amount']}"
+                if figures:
+                    line += f" · {item['kcal']:.0f} kcal"
+                lines.append(Paragraph(_text(line), BODY))
+            rows.append([Paragraph(_text(meal["name"]), STRONG), lines])
+        block = [Paragraph(_text(day["long"]), HEADING)]
+        block.append(_meal_table(rows) if rows else Paragraph("Nothing planned for this day.", SMALL))
+        if figures and rows:
+            totals = day["totals"]
+            block += [Spacer(1, 2 * mm), Paragraph(_text(f"Day total: {totals['energy_kcal']['value']:.0f} kcal, protein {totals['protein']['value']:.0f} g"), SMALL)]
+        story += [KeepTogether(block), Spacer(1, 3 * mm)]
+    if recipes:
+        story.append(Paragraph("Recipes", HEADING))
+        for recipe in recipes:
+            summary = recipe["summary"]
+            serves = f"Serves {fmt.plain(recipe['servings'])}"
+            if figures:
+                each = summary["per_serving"]
+                serves += f" · each serving {each['energy_kcal']['value']:.0f} kcal, protein {each['protein']['value']:.0f} g"
+            block = [Paragraph(_text(recipe["name"]), SUBHEADING), Paragraph(_text(serves), SMALL), Spacer(1, 1.5 * mm)]
+            if summary["items"]:
+                block.append(_bullets([f"{i['label'] or i['food_name']}: {i['amount']}" for i in summary["items"]]))
+            for paragraph in (recipe["method"] or "").split("\n\n"):
+                if paragraph.strip():
+                    block += [Spacer(1, 2 * mm), Paragraph(_text(paragraph.strip()), BODY)]
+            if recipe["notes"]:
+                block += [Spacer(1, 2 * mm), Paragraph(_text(recipe["notes"]), SMALL)]
+            story += [KeepTogether(block[:4]), *block[4:], Spacer(1, 4 * mm)]
+    if shopping:
+        story.append(Paragraph("Shopping list", HEADING))
+        for group in shopping:
+            rows = [[Paragraph("☐ " + _text(row["name"]), BODY), Paragraph(_text(row["shown"]), SMALL_RIGHT)] for row in group["rows"]]
+            table = Table(rows, colWidths=[PAGE_WIDTH * 0.62, PAGE_WIDTH * 0.38])
+            table.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0), ("LINEBELOW", (0, 0), (-1, -1), 0.4, LINE)]))
+            table.hAlign = "LEFT"
+            story += [KeepTogether([Paragraph(_text(group["name"]), SUBHEADING), table]), Spacer(1, 2 * mm)]
+        story.append(Paragraph("Amounts are for the whole plan. Allow extra for peel, bones and waste.", SMALL))
+    return _build(story, plan["title"], practice["display_name"])
