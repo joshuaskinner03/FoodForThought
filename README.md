@@ -267,8 +267,26 @@ activity log keeps its entries for the erased record, which hold record numbers
 only. Remembered food matches made only from this client's diaries are deleted;
 matches also confirmed for another client are kept, as they hold no client
 details. Backups made earlier still contain the record until they are replaced.
-How long financial records must be kept is for the practitioner to decide with
-their accountant.
+
+*Invoices → Invoices kept after erasure* lists the kept invoices with a "keep
+until" date: 31 January, five years after the Self Assessment deadline for
+the tax year of the later of the issue date and the last payment, following
+HMRC's rule for the self-employed. After that date they can be deleted there,
+and Home says when any can be. Check with an accountant if the practice is a
+limited company or has had a late return, as longer periods apply.
+
+### Income for the accountant
+
+*Invoices → Income summary* shows each tax year (6 April to 5 April) month
+by month: invoiced, VAT and received. Two spreadsheet (CSV) downloads give
+every invoice issued in the year and every payment received in it. Cells
+that a spreadsheet could run as a formula are prefixed with an apostrophe.
+
+### Comfort
+
+*Settings → Comfort* sets the text size and line spacing. The choice is kept
+per device in `comfort.json` in the data folder, outside the encrypted
+database, so it also applies to the unlock page.
 
 ## Security model
 
@@ -311,8 +329,16 @@ replaced. The data being replaced is kept as a safety copy in the data folder
 until it is deleted in Settings.
 
 The ChromeOS Linux environment is wiped by a Powerwash and is not part of the
-normal ChromeOS sync, so the backup file is the only copy. Keep it on a USB
-stick.
+normal ChromeOS sync, so the backup file is the only copy.
+
+*Settings → Automatic backups* saves a backup to a chosen folder once a day
+while FoodForThought is unlocked (checked on unlocking and every five
+minutes), keeps the last 7, 14 or 30, and removes older ones; other files in
+the folder are left alone. On a Chromebook, share a folder with Linux from
+the Files app (for example one in Google Drive or on a USB stick); it then
+appears under `/mnt/chromeos`. Only the encrypted file leaves Linux. A failed
+backup is shown in Settings and in the activity log. Each automatic backup
+also counts as the last backup on Home.
 
 ## Development
 

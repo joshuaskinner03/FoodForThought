@@ -10,12 +10,12 @@ from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from starlette.background import BackgroundTask
 
-from . import audit, backup, diary, launcher, updates
+from . import audit, autobackup, backup, diary, invoices, launcher, updates
 from .config import MIN_PASSWORD_LENGTH
 from .core import Throttled
 from .db import SchemaTooNew
 from .vault import WrongPassword
-from .web import COOKIE, Redirect, Web
+from .web import COOKIE, SPACINGS, TEXT_SIZES, Redirect, Web
 
 
 def _password_problem(new: str, confirm: str) -> str | None:
@@ -53,6 +53,7 @@ def router(web: Web) -> APIRouter:
             data_dir=str(cfg.data_dir),
             last_backup=web.db.get_setting("last_backup"),
             auto_lock=core.auto_lock_minutes,
+            kept_due=invoices.deletable_count(web.db),
             drafts=web.db.query(
                 "SELECT d.*, c.first_name, c.last_name FROM note_draft d JOIN client c ON c.id = d.client_id ORDER BY d.updated_at DESC"
             ),
@@ -86,7 +87,9 @@ def router(web: Web) -> APIRouter:
         if not core.initialised:
             raise Redirect("/setup")
         try:
-            return signed_in(core.unlock(password))
+            token = core.unlock(password)
+            web.scheduler.soon()
+            return signed_in(token)
         except WrongPassword:
             return web.page(request, "unlock.html", status_code=401, error="Wrong password.")
         except Throttled as exc:
@@ -110,13 +113,21 @@ def router(web: Web) -> APIRouter:
             core.lock("manual")
         return signed_out("/unlock?msg=locked")
 
-    def settings_page(request: Request, error: str | None = None):
+    def settings_page(request: Request, error: str | None = None, folder_error: str = "", folder_value: str | None = None):
         copy = backup.safety_copy(cfg)
+        auto = autobackup.settings(web.db)
         return web.page(
             request,
             "settings.html",
-            status_code=400 if error else 200,
+            status_code=400 if error or folder_error else 200,
             error=error,
+            auto=auto,
+            folder_value=auto["folder"] if folder_value is None else folder_value,
+            folder_error=folder_error,
+            suggestions=autobackup.suggested_folders(),
+            keep_choices=autobackup.KEEP_CHOICES,
+            text_sizes=TEXT_SIZES,
+            spacings=SPACINGS,
             auto_lock=core.auto_lock_minutes,
             last_backup=web.db.get_setting("last_backup"),
             safety_copy=copy.name if copy else None,
@@ -128,6 +139,41 @@ def router(web: Web) -> APIRouter:
     @r.get("/settings")
     def settings(request: Request, _: None = unlocked):
         return settings_page(request)
+
+    @r.post("/settings/auto-backup")
+    def save_auto_backup(request: Request, folder: str = Form(""), keep: str = Form("14"), _: None = unlocked):
+        try:
+            chosen = autobackup.check_folder(cfg, folder)
+        except autobackup.BackupFolderProblem as exc:
+            return settings_page(request, folder_error=str(exc), folder_value=folder)
+        web.db.set_setting("auto_backup_dir", str(chosen))
+        web.db.set_setting("auto_backup_keep", keep if keep.isdigit() and int(keep) in autobackup.KEEP_CHOICES else "14")
+        web.log("auto_backup_set", "folder chosen")
+        try:
+            autobackup.run(cfg, core)
+        except autobackup.BackupFolderProblem as exc:
+            return settings_page(request, folder_error=str(exc), folder_value=folder)
+        raise Redirect("/settings?msg=auto-backup-on#backups")
+
+    @r.post("/settings/comfort")
+    def save_comfort(size: str = Form("normal"), spacing: str = Form("normal"), _: None = unlocked):
+        web.save_comfort(size, spacing)
+        raise Redirect("/settings?msg=comfort-saved#comfort")
+
+    @r.post("/settings/auto-backup/now")
+    def auto_backup_now(request: Request, _: None = unlocked):
+        try:
+            autobackup.run(cfg, core)
+        except autobackup.BackupFolderProblem as exc:
+            return settings_page(request, folder_error=str(exc))
+        raise Redirect("/settings?msg=auto-backup-done#backups")
+
+    @r.post("/settings/auto-backup/off")
+    def auto_backup_off(_: None = unlocked):
+        for key in ("auto_backup_dir", "auto_backup_error"):
+            web.db.execute("DELETE FROM settings WHERE key = ?", (key,))
+        web.log("auto_backup_off")
+        raise Redirect("/settings?msg=auto-backup-off#backups")
 
     @r.post("/settings/auto-lock")
     def set_auto_lock(request: Request, minutes: str = Form(""), _: None = unlocked):

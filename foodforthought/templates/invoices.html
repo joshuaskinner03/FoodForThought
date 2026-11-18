@@ -4,7 +4,7 @@
 <div class="page-head">
   <div>
     <h1>Invoices</h1>
-    <p class="muted sub">Outstanding: <strong>{{ outstanding|money }}</strong> &middot; <a href="/invoices/summary">Income summary</a></p>
+    <p class="muted sub">Outstanding: <strong>{{ outstanding|money }}</strong> &middot; <a href="/invoices/summary">Income summary</a>{% if kept_count %} &middot; <a href="/invoices/kept">Invoices kept after erasure ({{ kept_count }})</a>{% endif %}</p>
   </div>
   <form method="post" action="/invoices/new" class="inline-row">
     <label class="visually-hidden" for="client_id">Client</label>

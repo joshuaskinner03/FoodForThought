@@ -8,6 +8,11 @@
   </div>
   <a class="button quiet" href="/invoices">Back to invoices</a>
 </div>
+<p class="actions">
+  <a class="button quiet small" href="/invoices/summary/invoices.csv?year={{ start_year }}">Download invoices (spreadsheet)</a>
+  <a class="button quiet small" href="/invoices/summary/payments.csv?year={{ start_year }}">Download payments received (spreadsheet)</a>
+</p>
+<p class="hint">For your accountant or Self Assessment. The files open in Google Sheets or Excel and contain client names, so store them with care.</p>
 <p class="chips">Tax year starting:
   {% for y in years %}<a href="/invoices/summary?year={{ y }}"{% if y == start_year %} class="here" aria-current="page"{% endif %}>{{ y }}</a>{% endfor %}
 </p>

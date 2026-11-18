@@ -32,6 +32,22 @@
   </form>
 </section>
 
+<section class="card" id="comfort">
+  <h2>Comfort</h2>
+  <p class="hint">Bigger text and more space between lines can make long pages easier to read. This applies to every page on this device.</p>
+  <form method="post" action="/settings/comfort" class="grid">
+    <div class="field">
+      <label for="size">Text size</label>
+      <select id="size" name="size">{% for key, label in text_sizes.items() %}<option value="{{ key }}"{% if key == comfort.size %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    </div>
+    <div class="field">
+      <label for="spacing">Line spacing</label>
+      <select id="spacing" name="spacing">{% for key, label in spacings.items() %}<option value="{{ key }}"{% if key == comfort.spacing %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    </div>
+    <div class="actions"><button type="submit">Save</button></div>
+  </form>
+</section>
+
 <section class="card" id="this-app">
   <h2>This app</h2>
   <p>Version {{ about.version }}{% if about.commit %} ({{ about.commit }}, {{ about.day|nice_date }}){% endif %}. <a href="/updates">Check for updates</a></p>
@@ -52,6 +68,33 @@
   <p>Last backup: {% if last_backup %}{{ last_backup|local_stamp }}{% else %}<span class="warn-text">never</span>{% endif %}</p>
   <form method="post" action="/backup"><button type="submit">Download encrypted backup</button></form>
   <p><a href="/restore">Restore from a backup</a></p>
+</section>
+
+<section class="card" id="backups">
+  <h2>Automatic backups</h2>
+  <p class="hint">Once a day while FoodForThought is unlocked, an encrypted backup is saved to a folder you choose, and the oldest are removed. Choose a folder outside Linux, such as one in Google Drive, so the backups survive if Linux or the Chromebook is reset. Each backup can only be opened with your password.</p>
+  {% if auto.folder %}
+  <p>Saving to <code>{{ auto.folder }}</code>, keeping the last {{ auto.keep }}. Last automatic backup: {% if auto.last %}{{ auto.last|local_stamp }}{% else %}not yet{% endif %}.</p>
+  {% if auto.error %}<p class="notice error" role="alert">The last automatic backup failed: {{ auto.error }}</p>{% endif %}
+  <div class="actions">
+    <form method="post" action="/settings/auto-backup/now"><button type="submit">Back up to the folder now</button></form>
+    <form method="post" action="/settings/auto-backup/off"><button class="quiet" type="submit">Turn off</button></form>
+  </div>
+  {% endif %}
+  {% if folder_error %}<p class="notice error" role="alert">{{ folder_error }}</p>{% endif %}
+  <form method="post" action="/settings/auto-backup">
+    <div class="field">
+      <label for="folder">{{ "Change the folder" if auto.folder else "Folder" }}</label>
+      <input id="folder" name="folder" value="{{ folder_value }}" list="shared-folders" placeholder="/mnt/chromeos/GoogleDrive/MyDrive/FoodForThought backups" autocomplete="off">
+      <datalist id="shared-folders">{% for f in suggestions %}<option value="{{ f }}">{% endfor %}</datalist>
+    </div>
+    <p class="hint">On a Chromebook: in the Files app, make a folder for the backups (for example in Google Drive), right-click it and choose Share with Linux. It then appears here as a suggestion, under /mnt/chromeos.</p>
+    <div class="field">
+      <label for="keep">Keep</label>
+      <select id="keep" name="keep">{% for n in keep_choices %}<option value="{{ n }}"{% if n == auto.keep %} selected{% endif %}>the last {{ n }} backups</option>{% endfor %}</select>
+    </div>
+    <div class="actions"><button type="submit">{{ "Save and back up now" if auto.folder else "Turn on and back up now" }}</button></div>
+  </form>
   {% if safety_copy %}
   <p>A safety copy of the data from before the last restore is kept in <code>{{ safety_copy }}</code> inside the data folder. Delete it once you are sure the restore is right.</p>
   <form method="post" action="/settings/safety-copy/delete"><button class="danger" type="submit">Delete safety copy</button></form>

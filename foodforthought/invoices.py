@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import csv
+import io
+
 from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
@@ -84,6 +87,39 @@ def tax_year_periods(start_year: int) -> list[tuple[str, date, date]]:
     return periods
 
 
+RETENTION_YEARS = 5
+
+
+def keep_until(invoice: dict) -> date:
+    dates = [fmt.parse_date(invoice["issue_date"]), *(fmt.parse_date(p["paid_on"]) for p in invoice["payments"])]
+    latest = max(d for d in dates if d)
+    return date(tax_year_start(latest) + 2 + RETENTION_YEARS, 1, 31)
+
+
+def kept_invoices(db: Database, today: date | None = None) -> list[dict]:
+    found = load(db, "WHERE erased_at IS NOT NULL")
+    for invoice in found:
+        invoice["keep_until"] = keep_until(invoice)
+        invoice["can_delete"] = invoice["keep_until"] < (today or date.today())
+    return sorted(found, key=lambda i: (i["keep_until"], i["issue_date"]))
+
+
+def deletable_count(db: Database, today: date | None = None) -> int:
+    return sum(1 for invoice in kept_invoices(db, today) if invoice["can_delete"])
+
+
+def csv_text(rows: list[list]) -> str:
+    out = io.StringIO()
+    writer = csv.writer(out)
+    for row in rows:
+        writer.writerow(["'" + c if isinstance(c, str) and c[:1] in ("=", "+", "-", "@") else c for c in row])
+    return out.getvalue()
+
+
+def pounds(pence: int) -> str:
+    return f"{pence / 100:.2f}"
+
+
 def summary(invoices: list[dict], start_year: int) -> dict:
     rows = []
     for label, first, last in tax_year_periods(start_year):
@@ -159,6 +195,7 @@ def router(web: Web) -> APIRouter:
             filters=FILTERS,
             clients=clients.active(web.db),
             outstanding=sum(max(i["totals"]["balance"], 0) for i in invoices if i["status"] == "issued"),
+            kept_count=web.db.one("SELECT count(*) FROM invoice WHERE erased_at IS NOT NULL")[0],
         )
 
     @r.get("/invoices/summary")
@@ -173,6 +210,58 @@ def router(web: Web) -> APIRouter:
             years=list(range(current, current - 7, -1)),
             vat_registered=bool(practice.load(web.db)["vat_registered"]),
         )
+
+    def year_bounds(year: str) -> tuple[int, str, str]:
+        start_year = int(year) if year.isdigit() and 2000 <= int(year) <= 2100 else tax_year_start(date.today())
+        return start_year, date(start_year, 4, 6).isoformat(), date(start_year + 1, 4, 5).isoformat()
+
+    def csv_response(rows: list[list], filename: str, start_year: int) -> Response:
+        web.log("income_exported", f"{filename} for tax year {start_year}")
+        return Response(
+            csv_text(rows),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": f'attachment; filename="{filename}-{start_year}-{start_year + 1 - 2000:02d}.csv"'},
+        )
+
+    @r.get("/invoices/summary/invoices.csv")
+    def invoices_csv(year: str = ""):
+        start_year, first, last = year_bounds(year)
+        rows = [["Number", "Issue date", "Billed to", "Description", "Net", "VAT", "Total", "Status", "Paid so far"]]
+        for invoice in sorted(load(web.db, "WHERE status != 'draft' AND issue_date BETWEEN ? AND ?", (first, last)), key=lambda i: (i["issue_date"], i["number"] or "")):
+            figures = invoice["totals"]
+            rows.append([
+                invoice["number"], invoice["issue_date"], invoice["bill_to_name"], "; ".join(line["description"] for line in invoice["lines"]),
+                pounds(figures["net"]), pounds(figures["vat"]), pounds(figures["total"]), invoice["state_label"], pounds(figures["paid"]),
+            ])
+        return csv_response(rows, "invoices", start_year)
+
+    @r.get("/invoices/summary/payments.csv")
+    def payments_csv(year: str = ""):
+        start_year, first, last = year_bounds(year)
+        rows = [["Date received", "Invoice", "Billed to", "Amount", "Method", "Note"]]
+        found = web.db.query(
+            "SELECT p.*, i.number, i.bill_to_name FROM payment p JOIN invoice i ON i.id = p.invoice_id "
+            "WHERE p.paid_on BETWEEN ? AND ? ORDER BY p.paid_on, p.id",
+            (first, last),
+        )
+        for row in found:
+            rows.append([row["paid_on"], row["number"], row["bill_to_name"], pounds(row["amount_pence"]), row["method"], row["note"]])
+        return csv_response(rows, "payments", start_year)
+
+    @r.get("/invoices/kept")
+    def kept(request: Request):
+        return web.page(request, "invoices_kept.html", kept=kept_invoices(web.db), years=RETENTION_YEARS, section="invoices")
+
+    @r.post("/invoices/kept/delete")
+    def delete_kept(form: FormData = Depends(form_data)):
+        chosen = {int(v) for v in form.getlist("invoice") if str(v).isdigit()}
+        gone = [i for i in kept_invoices(web.db) if i["can_delete"] and (not chosen or i["id"] in chosen)]
+        with web.db.transaction():
+            for invoice in gone:
+                web.db.execute("DELETE FROM invoice WHERE id = ?", (invoice["id"],))
+        if gone:
+            web.log("kept_invoices_deleted", f"{len(gone)} invoices past the retention date: " + ", ".join(i["number"] or "" for i in gone))
+        raise Redirect(f"/invoices/kept?msg={'kept-deleted' if gone else 'saved'}")
 
     @r.post("/invoices/new")
     def create(form: FormData = Depends(form_data)):

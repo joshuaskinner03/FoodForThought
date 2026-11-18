@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from datetime import date
 from pathlib import Path
 
@@ -39,10 +41,18 @@ MESSAGES = {
     "launcher-added": "FoodForThought is now in the launcher. On a Chromebook it is in the Linux apps folder.",
     "launcher-removed": "Removed from the launcher.",
     "day-copied": "Day copied.",
+    "kept-deleted": "The ticked invoices are deleted.",
+    "comfort-saved": "Saved. The new text size and spacing apply on every page.",
+    "auto-backup-on": "Automatic backups are on. The first one is in the folder now.",
+    "auto-backup-done": "A backup is saved in the folder.",
+    "auto-backup-off": "Automatic backups are off. Backups already in the folder are left there.",
     "portions-applied": "Portion sizes updated.",
     "template-saved": "Saved as a template. This is the template; the client's plan is unchanged.",
     "pdf-saved": "The PDF is saved in the client's Consent and files tab.",
 }
+
+TEXT_SIZES = {"normal": "Standard", "large": "Large", "larger": "Larger"}
+SPACINGS = {"normal": "Standard", "relaxed": "More space", "loose": "Most space"}
 
 ERRORS = {
     "no-file": "Choose a file first.",
@@ -107,6 +117,23 @@ class Web:
             raise Redirect("/unlock")
         self.core.touch()
 
+    def comfort(self) -> dict:
+        try:
+            saved = json.loads((self.cfg.data_dir / "comfort.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            saved = {}
+        saved = saved if isinstance(saved, dict) else {}
+        return {
+            "size": saved.get("size") if saved.get("size") in TEXT_SIZES else "normal",
+            "spacing": saved.get("spacing") if saved.get("spacing") in SPACINGS else "normal",
+        }
+
+    def save_comfort(self, size: str, spacing: str) -> None:
+        path = self.cfg.data_dir / "comfort.json"
+        partial = path.with_suffix(".part")
+        partial.write_text(json.dumps({"size": size if size in TEXT_SIZES else "normal", "spacing": spacing if spacing in SPACINGS else "normal"}), encoding="utf-8")
+        partial.replace(path)
+
     def log(self, action: str, detail: str = "", client_id: int | None = None) -> None:
         audit.record(self.db, action, detail, client_id=client_id)
 
@@ -120,5 +147,6 @@ class Web:
             min_password=MIN_PASSWORD_LENGTH,
             section=request.url.path.strip("/").split("/")[0],
             today=date.today().isoformat(),
+            comfort=self.comfort(),
         )
         return self.templates.TemplateResponse(request, template_name, context, status_code=status_code)
