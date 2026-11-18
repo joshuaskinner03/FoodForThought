@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from starlette.datastructures import FormData
 
 from . import clients, fmt
@@ -103,13 +103,14 @@ def router(web: Web) -> APIRouter:
         return web.page(
             request,
             "client_notes.html",
+            drafts=web.db.query("SELECT * FROM note_draft WHERE client_id = ? ORDER BY updated_at DESC", (client_id,)),
             notes=web.db.query(
                 "SELECT * FROM note WHERE client_id = ? ORDER BY note_date DESC, id DESC", (client_id,)
             ),
             **clients.context(web, client_id, "notes"),
         )
 
-    def note_page(request: Request, client_id: int, values: dict, note, error: str | None = None):
+    def note_page(request: Request, client_id: int, values: dict, note, error: str | None = None, restored: str = ""):
         return web.page(
             request,
             "note_form.html",
@@ -117,6 +118,7 @@ def router(web: Web) -> APIRouter:
             error=error,
             values=values,
             note=note,
+            restored=restored,
             note_templates=templates(),
             **clients.context(web, client_id, "notes"),
         )
@@ -140,6 +142,43 @@ def router(web: Web) -> APIRouter:
         row = web.db.one("SELECT id FROM appointment WHERE id = ? AND client_id = ?", (int(raw), client_id))
         return row["id"] if row else None
 
+    def key(client_id: int, note_id: int | None) -> str:
+        return f"{client_id}:{note_id or 'new'}"
+
+    def draft_for(client_id: int, note_id: int | None):
+        return web.db.one("SELECT * FROM note_draft WHERE draft_key = ?", (key(client_id, note_id),))
+
+    def drop_draft(client_id: int, note_id: int | None) -> None:
+        web.db.execute("DELETE FROM note_draft WHERE draft_key = ?", (key(client_id, note_id),))
+
+    def restore(values: dict, draft) -> dict:
+        return dict(values, note_date=draft["note_date"] or values["note_date"], title=draft["title"], body=draft["body"],
+                    appointment_id=draft["appointment_id"] or values.get("appointment_id", ""))
+
+    @r.post("/clients/{client_id}/notes/draft")
+    def keep_draft(client_id: int, form: FormData = Depends(form_data)):
+        clients.get(web.db, client_id)
+        raw = text(form, "note_id")
+        note_id = note_row(client_id, int(raw))["id"] if raw.isdigit() else None
+        title, body = text(form, "title", 200), text(form, "body", 200000)
+        if not (title or body):
+            drop_draft(client_id, note_id)
+        else:
+            web.db.execute(
+                "INSERT INTO note_draft(draft_key, client_id, note_id, note_date, title, body, appointment_id, updated_at) "
+                "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(draft_key) DO UPDATE SET note_date = excluded.note_date, "
+                "title = excluded.title, body = excluded.body, appointment_id = excluded.appointment_id, updated_at = excluded.updated_at",
+                (key(client_id, note_id), client_id, note_id, fmt.iso(text(form, "note_date")), title, body, text(form, "appointment_id"), now_iso()),
+            )
+        return Response(status_code=204)
+
+    @r.post("/clients/{client_id}/notes/draft/discard")
+    def discard_draft(client_id: int, form: FormData = Depends(form_data)):
+        raw = text(form, "note_id")
+        note_id = int(raw) if raw.isdigit() else None
+        drop_draft(client_id, note_id)
+        raise Redirect(f"/clients/{client_id}/notes/{note_id}/edit" if note_id else f"/clients/{client_id}/notes/new")
+
     @r.get("/clients/{client_id}/notes/new")
     def new_note(request: Request, client_id: int, template: str = "", appointment: str = ""):
         values = {"note_date": date.today().isoformat(), "title": "", "body": "", "appointment_id": ""}
@@ -152,6 +191,9 @@ def router(web: Web) -> APIRouter:
             row = web.db.one("SELECT * FROM appointment WHERE id = ?", (linked,))
             values.update(note_date=row["date"], appointment_id=str(linked))
             values["title"] = values["title"] or row["title"]
+        draft = draft_for(client_id, None)
+        if draft:
+            return note_page(request, client_id, restore(values, draft), None, restored=draft["updated_at"])
         return note_page(request, client_id, values, None)
 
     @r.post("/clients/{client_id}/notes/new")
@@ -174,6 +216,7 @@ def router(web: Web) -> APIRouter:
                 now,
             ),
         )
+        drop_draft(client_id, None)
         web.log("note_created", f"note {note_id}", client_id)
         raise Redirect(f"/clients/{client_id}/notes?msg=saved#note-{note_id}")
 
@@ -181,6 +224,9 @@ def router(web: Web) -> APIRouter:
     def edit_note(request: Request, client_id: int, note_id: int):
         note = note_row(client_id, note_id)
         values = dict(note, appointment_id=str(note["appointment_id"] or ""))
+        draft = draft_for(client_id, note_id)
+        if draft:
+            return note_page(request, client_id, restore(values, draft), note, restored=draft["updated_at"])
         return note_page(request, client_id, values, note)
 
     @r.post("/clients/{client_id}/notes/{note_id}/edit")
@@ -193,6 +239,7 @@ def router(web: Web) -> APIRouter:
             "UPDATE note SET note_date = ?, title = ?, body = ?, updated_at = ? WHERE id = ?",
             (values["note_date"], values["title"], values["body"], now_iso(), note_id),
         )
+        drop_draft(client_id, note_id)
         web.log("note_updated", f"note {note_id}", client_id)
         raise Redirect(f"/clients/{client_id}/notes?msg=saved#note-{note_id}")
 

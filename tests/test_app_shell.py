@@ -73,7 +73,7 @@ def test_exec_quoting(arg, expected):
 
 def test_launcher_buttons_in_settings(unlocked, xdg):
     page = unlocked.get("/settings").text
-    assert "This app" in page and "Version 0.6.0" in page and "Add to the launcher" in page
+    assert "This app" in page and "Version 0.7.0" in page and "Add to the launcher" in page
     done = unlocked.post("/settings/launcher")
     assert done.headers["location"] == "/settings?msg=launcher-added#this-app"
     assert (xdg / "applications" / "foodforthought.desktop").exists()
@@ -177,7 +177,7 @@ def test_not_a_git_copy(unlocked, tmp_path, monkeypatch):
 
 def test_check_and_update(unlocked, repos, cfg):
     page = unlocked.get("/updates").text
-    assert "Check for updates" in page and "This is version 0.6.0 (" in page
+    assert "Check for updates" in page and "This is version 0.7.0 (" in page
     unlocked.post("/updates/check")
     assert "You have the latest version." in unlocked.get("/updates").text
     assert unlocked.post("/updates/apply").headers["location"] == "/updates"

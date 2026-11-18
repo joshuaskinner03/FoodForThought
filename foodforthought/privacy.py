@@ -77,6 +77,9 @@ def collect(web: Web, client_id: int) -> dict:
         }
         for invoice in invoices.load(db, "WHERE client_id = ?", (client_id,))
     ]
+    record["note_drafts"] = [
+        dict(row) for row in db.query("SELECT note_date, title, body, updated_at FROM note_draft WHERE client_id = ? ORDER BY updated_at", (client_id,))
+    ]
     record["meal_plans"] = []
     for plan in db.query("SELECT * FROM meal_plan WHERE client_id = ? ORDER BY created_at, id", (client_id,)):
         items = db.query(

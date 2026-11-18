@@ -39,6 +39,7 @@ MESSAGES = {
     "launcher-added": "FoodForThought is now in the launcher. On a Chromebook it is in the Linux apps folder.",
     "launcher-removed": "Removed from the launcher.",
     "day-copied": "Day copied.",
+    "portions-applied": "Portion sizes updated.",
     "template-saved": "Saved as a template. This is the template; the client's plan is unchanged.",
     "pdf-saved": "The PDF is saved in the client's Consent and files tab.",
 }

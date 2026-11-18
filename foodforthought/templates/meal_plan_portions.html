@@ -1,0 +1,58 @@
+{% extends layout %}
+{% block tab %}
+<div class="card-head">
+  <h2>Suggest portions: {{ label.long }}</h2>
+  <span class="row-actions"><a href="/meal-plans/{{ plan.id }}#day-{{ day }}">Back to the plan</a></span>
+</div>
+{% if not target %}
+<section class="card"><p class="warn">{% if plan.client_id %}Set targets for this client first, on their <a href="/clients/{{ plan.client_id }}/targets">Targets</a> tab.{% else %}Templates have no targets. Start a client's plan from this template, then suggest portions there.{% endif %}</p></section>
+{% elif not has_items %}
+<section class="card"><p class="muted">Nothing is planned on this day yet.</p></section>
+{% else %}
+<section class="card">
+  <p class="hint">This changes only the amounts already in the day, to bring energy, protein, fat and carbohydrate closer to the targets. It never adds, removes or swaps foods. Untick anything you want to leave alone, and check the result suits the client.</p>
+  <form id="portion-settings" method="get" action="/meal-plans/{{ plan.id }}/days/{{ day }}/portions" class="grid">
+    <div class="field">
+      <label for="room">Let each amount change</label>
+      <select id="room" name="room">{% for key, words in rooms.items() %}<option value="{{ key }}"{% if key == room %} selected{% endif %}>{{ words }}</option>{% endfor %}</select>
+    </div>
+    <div class="actions"><button class="quiet" type="submit">Work it out again</button></div>
+  </form>
+  <table class="numbers analysis">
+    <thead><tr><th>Target</th><th>Now</th><th>Suggested</th></tr></thead>
+    <tbody>
+      {% for t in result.totals %}
+      <tr>
+        <td>{{ t.label }}: {{ t.target|number(0) }} {{ t.unit }}</td>
+        <td class="n">{{ t.before|number(0) }} {{ t.unit }} ({{ t.before_share|number(0) }}%)</td>
+        <td class="n"><strong>{{ t.after|number(0) }} {{ t.unit }} ({{ t.after_share|number(0) }}%)</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+<form id="portion-apply" method="post" action="/meal-plans/{{ plan.id }}/days/{{ day }}/portions">
+  <input type="hidden" name="room" value="{{ room }}">
+  {% for id in keep %}<input type="hidden" name="keep" value="{{ id }}">{% endfor %}
+</form>
+<section class="card">
+  <table class="portion-table">
+    <thead><tr><th>Use</th><th>Meal</th><th>Recipe or food</th><th class="n">Now</th><th class="n">Suggested</th><th>Keep as it is</th></tr></thead>
+    <tbody>
+      {% for c in result.changes %}{% set i = c.item %}
+      <tr{% if not c.changed %} class="faded"{% endif %}>
+        <td>{% if c.changed %}<input type="checkbox" name="apply" value="{{ i.id }}" form="portion-apply" checked aria-label="Use the suggestion for {{ i.name }}">{% endif %}</td>
+        <td>{{ i.meal }}</td>
+        <td>{{ i.name }}</td>
+        <td class="n">{{ i.amount }}</td>
+        <td class="n">{% if c.kept %}<span class="muted">kept</span>{% elif not c.changed %}<span class="muted">no change</span>{% elif i.kind == "recipe" %}{{ c.servings|plain }} serving{{ "" if c.servings == 1 else "s" }}{% elif c.quantity %}{{ c.quantity|plain }} × {{ i.unit[2:] if i.unit.startswith("1 ") else i.unit }} ({{ c.grams|number(0) }} g){% else %}{{ c.grams|number(0) }} g{% endif %}</td>
+        <td><input type="checkbox" name="keep" value="{{ i.id }}" form="portion-settings"{% if c.kept %} checked{% endif %} aria-label="Keep {{ i.name }} as it is"></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="hint">After ticking "Keep as it is", press Work it out again.</p>
+  <div class="actions"><button type="submit" form="portion-apply">Use the ticked suggestions</button></div>
+</section>
+{% endif %}
+{% endblock %}

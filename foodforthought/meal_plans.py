@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from starlette.datastructures import FormData
 
-from . import analysis, clients, fmt, foods, pdf, practice, recipes, reference
+from . import analysis, clients, fmt, foods, optimiser, pdf, practice, recipes, reference
 from .audit import now_iso
 from .db import Database
 from .nutrients import food_group_name
@@ -403,6 +403,43 @@ def router(web: Web) -> APIRouter:
             request, "meal_plan_nutrition.html", result=result, target=target, plan=plan, plan_age=age,
             days=by_day(plan, found), states=analysis.STATES, **shell(plan),
         )
+
+    def portions_context(plan: dict, day: int, room: str, keep: set[int]) -> dict:
+        if not 1 <= day <= plan["days"]:
+            raise HTTPException(404, "That day is not in the plan.")
+        target = target_for(plan)
+        found = [item for item in plan_items(db(), plan["id"]) if item["day"] == day]
+        supply = [{key: values[key]["value"] for key, *_ in optimiser.GOALS} for values in (recipes.totals(item["parts"]) for item in found)]
+        room = room if room in optimiser.ROOM else "50"
+        result = optimiser.suggest(found, supply, target, room, keep) if target and found else None
+        return {"plan": plan, "day": day, "label": day_labels(plan)[day - 1], "room": room, "rooms": optimiser.ROOM_LABELS,
+                "keep": keep, "target": target, "result": result, "has_items": bool(found)}
+
+    @r.get("/meal-plans/{plan_id}/days/{day}/portions")
+    def portions(request: Request, plan_id: int, day: int, room: str = "50", keep: list[int] = Query(default=[])):
+        plan = plan_row(plan_id)
+        return web.page(request, "meal_plan_portions.html", **shell(plan), **portions_context(plan, day, room, set(keep)))
+
+    @r.post("/meal-plans/{plan_id}/days/{day}/portions")
+    def apply_portions(plan_id: int, day: int, form: FormData = Depends(form_data)):
+        plan = plan_row(plan_id)
+        keep = {int(v) for v in form.getlist("keep") if str(v).isdigit()}
+        chosen = {int(v) for v in form.getlist("apply") if str(v).isdigit()}
+        found = portions_context(plan, day, text(form, "room"), keep)["result"]
+        applied = 0
+        for change in found["changes"] if found else []:
+            item = change["item"]
+            if item["id"] not in chosen or not change["changed"]:
+                continue
+            if item["kind"] == "recipe":
+                db().execute("UPDATE meal_plan_item SET servings = ? WHERE id = ?", (change["servings"], item["id"]))
+            else:
+                db().execute("UPDATE meal_plan_item SET grams = ?, quantity = ? WHERE id = ?", (change["grams"], change.get("quantity", item["quantity"]), item["id"]))
+            applied += 1
+        if applied:
+            db().execute("UPDATE meal_plan SET updated_at = ? WHERE id = ?", (now_iso(), plan_id))
+            web.log("meal_plan_portions", f"plan {plan_id} day {day}: {applied} changed", plan["client_id"])
+        raise Redirect(f"{plan_url(plan)}?day={day}&msg=portions-applied#day-{day}")
 
     @r.get("/meal-plans/{plan_id}/shopping")
     def shopping_list(request: Request, plan_id: int):

@@ -2,6 +2,32 @@
 
 Do these in order. Note anything that differs from "Expect".
 
+## Logo, colours, portion optimiser and note drafts
+
+1. **Update from the app.** Download an encrypted backup, then Settings →
+   This app → Check for updates → Update and restart. Expect version 0.7.0
+   at the bottom of each page.
+2. **Look.** Expect the cream background and your logo at the top left.
+   Spend a few minutes on your usual pages and tell me if anything is hard
+   to read or too bright.
+3. **Icons.** The Linux launcher icon updates the next time FoodForThought
+   starts from it. If the shelf still shows the leaf, use Settings → This app
+   → Remove from the launcher, then Add to the launcher, and pin it again.
+   Chrome updates the installed app's icon by itself, which can take a day.
+4. **Where nutrients come from.** Open a diary analysis or a plan's
+   Nutrition page and point at Protein, then at Iron. Expect a list of
+   foods with amounts and percentages. Tap one on the touchscreen too.
+5. **Note kept through a lock.** Start a new note for a client and type a
+   couple of lines. Wait for "Kept at" next to Save note, then press Lock
+   (top right) and unlock. Expect "Unsaved note for ..." on Home; Carry on
+   writing should bring the text back. Save it and the message goes.
+6. **Suggest portions.** Open a meal plan for a client with targets. On a
+   day, click Suggest portions. Check the before and after against the
+   targets, try a different limit, tick Keep as it is on one item and work
+   it out again, then use the suggestions. The plan should show the new
+   amounts.
+7. **Backup.** Download a new encrypted backup.
+
 ## Phase 2, step 3: recipes and meal plans
 
 1. **Update from the app.** Download an encrypted backup first (Settings →

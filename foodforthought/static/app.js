@@ -18,6 +18,21 @@
   document.addEventListener("DOMContentLoaded", waitForRestart);
   document.addEventListener("htmx:afterSettle", waitForRestart);
 
+  document.querySelectorAll("form[data-autosave]").forEach((form) => {
+    let timer = null;
+    const status = form.querySelector("[data-autosave-status]");
+    const keep = async () => {
+      try {
+        const response = await fetch(form.dataset.autosave, { method: "POST", body: new FormData(form) });
+        if (response.ok && status) status.textContent = `Kept at ${new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
+      } catch (err) {
+        /* try again on the next change */
+      }
+    };
+    form.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(keep, 1500); });
+    form.addEventListener("submit", () => clearTimeout(timer));
+  });
+
   document.addEventListener("submit", (event) => {
     const source = event.submitter && event.submitter.dataset.confirm ? event.submitter : event.target;
     const question = source.dataset.confirm;

@@ -75,13 +75,26 @@ def exec_arg(arg: str) -> str:
     return '"' + inner.replace("\\", "\\\\") + '"'
 
 
-def install(data_dir: Path, port: int, default_port: int) -> Path:
+def write_icons() -> None:
     from PIL import Image
 
     source = Image.open(PKG / "static" / "icons" / "icon-512.png")
     for size, path in zip(ICON_SIZES, icon_paths()):
         path.parent.mkdir(parents=True, exist_ok=True)
         source.resize((size, size), Image.LANCZOS).save(path)
+
+
+def refresh_icons() -> None:
+    if supported() and installed():
+        try:
+            write_icons()
+            _refresh()
+        except OSError:
+            pass
+
+
+def install(data_dir: Path, port: int, default_port: int) -> Path:
+    write_icons()
     command = ["/bin/bash", str(PROGRAM_DIR / "start.sh"), "--launch", "--data", str(data_dir)]
     if port != default_port:
         command += ["--port", str(port)]

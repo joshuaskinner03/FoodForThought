@@ -1,0 +1,11 @@
+CREATE TABLE note_draft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    draft_key TEXT NOT NULL UNIQUE,
+    client_id INTEGER NOT NULL REFERENCES client(id) ON DELETE CASCADE,
+    note_id INTEGER REFERENCES note(id) ON DELETE CASCADE,
+    note_date TEXT NOT NULL DEFAULT '',
+    title TEXT NOT NULL DEFAULT '',
+    body TEXT NOT NULL DEFAULT '',
+    appointment_id TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL
+);

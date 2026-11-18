@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"historyCacheSize":0,"attributesToSettle":["class","width","height"]}'>
   <title>{% block title %}FoodForThought{% endblock %}</title>
-  <meta name="theme-color" content="#2f6b4f">
+  <meta name="theme-color" content="#f9ebc7">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/static/icons/favicon-32.png" sizes="32x32">
   <link rel="stylesheet" href="/static/app.css">
@@ -14,7 +14,7 @@
 </head>
 <body data-authed="{{ '1' if authed else '0' }}">
   <header class="bar">
-    <a class="brand" href="/">FoodForThought</a>
+    <a class="brand" href="/"><img src="/static/icons/mark.png" alt="" width="50" height="35">Food For Thought</a>
     {% if authed %}
     <nav>
       <a href="/"{% if section == '' %} class="here"{% endif %}>Home</a>
