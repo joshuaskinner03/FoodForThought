@@ -32,6 +32,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--launch", action="store_true", help="open the app, starting it in the background if needed")
     parser.add_argument("--install-app", action="store_true", help="add FoodForThought to the app launcher")
     parser.add_argument("--remove-app", action="store_true", help="remove FoodForThought from the app launcher")
+    parser.add_argument("--service", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
 
     cfg = Config(data_dir=args.data or default_data_dir(), port=args.port)
@@ -48,34 +49,47 @@ def main(argv: list[str] | None = None) -> None:
             print("FoodForThought is now in the launcher. On a Chromebook it is in the Linux apps folder.")
         return
 
-    if args.launch:
-        launcher.note(f"launch {__version__}: data {cfg.data_dir}")
+    background = args.launch or args.service
+    if background:
+        launcher.note(f"{'service' if args.service else 'launch'} {__version__}: data {cfg.data_dir}")
+    if args.launch and _port_free(cfg.port) and launcher.start_service():
+        launcher.note("asked Linux to start the service")
+        if launcher.wait_until_running(cfg.port):
+            launcher.note("server answering; the service opens the page")
+            return
+        launcher.note("the service did not answer; starting here instead")
     if not _port_free(cfg.port):
         if launcher.is_running(cfg.port):
+            if args.service:
+                launcher.note("already running")
+                return
             if args.launch:
                 launcher.note("already running")
-                launcher.open_browser(url)
+                if not launcher.opened_recently():
+                    launcher.open_browser(url)
                 return
             print(f"FoodForThought is already running. Open {url} in Chrome.")
         else:
             print(f"Port {cfg.port} is in use by another program. Try --port 8766.")
-            if args.launch:
+            if background:
                 launcher.note(f"port {cfg.port} is in use by another program")
         sys.exit(1)
 
-    if args.launch:
+    if background:
         launcher.log_to(cfg.data_dir / "app.log")
     launcher.refresh_icons()
+    launcher.ensure_service(cfg.data_dir, cfg.port, DEFAULT_PORT)
 
     app = create_app(cfg)
     print(f"FoodForThought {__version__}")
     print(f"Data folder: {cfg.data_dir}")
     print(f"Open {url} in Chrome. Press Ctrl+C here to stop.")
-    if args.launch:
+    if background:
         def opener() -> None:
             if launcher.wait_until_running(cfg.port):
                 launcher.note("server answering")
-                launcher.open_browser(url)
+                if not launcher.opened_recently():
+                    launcher.open_browser(url)
             else:
                 launcher.note("server did not answer within a minute")
 
