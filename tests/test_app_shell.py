@@ -84,7 +84,7 @@ def test_exec_quoting(arg, expected):
 
 def test_launcher_buttons_in_settings(unlocked, xdg, systemd):
     page = unlocked.get("/settings").text
-    assert "This app" in page and "Version 0.8.3" in page and "Add to the launcher" in page
+    assert "This app" in page and "Version 0.8.4" in page and "Add to the launcher" in page
     done = unlocked.post("/settings/launcher")
     assert done.headers["location"] == "/settings?msg=launcher-added#this-app"
     assert (xdg / "applications" / "foodforthought.desktop").exists()
@@ -189,7 +189,7 @@ def test_not_a_git_copy(unlocked, tmp_path, monkeypatch):
 
 def test_check_and_update(unlocked, repos, cfg):
     page = unlocked.get("/updates").text
-    assert "Check for updates" in page and "This is version 0.8.3 (" in page
+    assert "Check for updates" in page and "This is version 0.8.4 (" in page
     unlocked.post("/updates/check")
     assert "You have the latest version." in unlocked.get("/updates").text
     assert unlocked.post("/updates/apply").headers["location"] == "/updates"
@@ -372,3 +372,37 @@ def test_session_details_for_systemctl(monkeypatch):
         assert env["DBUS_SESSION_BUS_ADDRESS"] == f"unix:path={env['XDG_RUNTIME_DIR']}/bus"
     monkeypatch.setenv("XDG_RUNTIME_DIR", "/run/user/1000")
     assert launcher.session_env()["DBUS_SESSION_BUS_ADDRESS"] == "unix:path=/run/user/1000/bus"
+
+
+def test_service_waits_for_chromeos_port_forwarding(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setattr(launcher.time, "sleep", lambda seconds: None)
+    states = {"LoadState": iter(["loaded", "not-found"]), "ActiveState": iter(["activating", "inactive", "active"])}
+    asked = []
+    monkeypatch.setattr(launcher, "unit_property", lambda unit, name, user: asked.append((name, user)) or next(states[name]))
+    assert launcher.wait_for_port_forwarding()
+    assert asked[:2] == [("LoadState", False), ("LoadState", True)] and asked.count(("ActiveState", False)) == 3
+    log = launcher.launch_log().read_text()
+    assert "waiting for ChromeOS port forwarding" in log and "is ready" in log
+
+    monkeypatch.setattr(launcher, "unit_property", lambda unit, name, user: "not-found" if name == "LoadState" else "")
+    assert not launcher.wait_for_port_forwarding()
+
+    monkeypatch.setattr(launcher, "unit_property", lambda unit, name, user: "loaded" if name == "LoadState" else "inactive")
+    assert not launcher.wait_for_port_forwarding(seconds=0.05, pause=0.01)
+    assert "did not start in time" in launcher.launch_log().read_text()
+
+
+def test_unit_property_reads_systemctl(monkeypatch):
+    seen = []
+
+    class Done:
+        returncode = 0
+        stdout = "active\n"
+
+    monkeypatch.setattr(launcher, "_tool", lambda name: "/usr/bin/systemctl")
+    monkeypatch.setattr(launcher.subprocess, "run", lambda command, **kw: seen.append(command) or Done())
+    assert launcher.unit_property("cros-port-listener.service", "ActiveState", False) == "active"
+    assert seen[0] == ["/usr/bin/systemctl", "show", "-p", "ActiveState", "--value", "cros-port-listener.service"]
+    launcher.unit_property("x.service", "LoadState", True)
+    assert seen[1][1] == "--user"

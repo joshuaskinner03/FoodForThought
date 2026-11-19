@@ -50,6 +50,12 @@ starts by itself whenever Linux starts and opens its page once ready. After
 the Chromebook restarts, ChromeOS may start Linux on the first click without
 running the icon's own command; the service covers that. The icon itself
 starts the service if it is stopped, and waits up to a minute for it.
+Chrome reaches FoodForThought through ChromeOS port forwarding, which only
+notices programs that start listening after its helper inside Linux
+(`cros-port-listener`) is running. So when started by the service,
+FoodForThought waits for that helper (up to 90 seconds) before listening.
+If Chrome ever shows "not running" while FoodForThought is running, run
+`systemctl --user restart foodforthought` in the Terminal.
 Each launch step is noted in `.cache/foodforthought-launch.log` in the Linux
 home folder, and start-up messages and errors go to `app.log` in the data
 folder.
