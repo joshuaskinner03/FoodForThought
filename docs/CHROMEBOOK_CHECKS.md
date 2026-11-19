@@ -2,6 +2,17 @@
 
 Do these in order. Note anything that differs from "Expect".
 
+## Opening from the icon after a restart
+
+1. **Update from the app** (Settings → This app → Check for updates →
+   Update and restart). Expect version 0.8.2.
+2. **Restart the Chromebook.** Do not open the Terminal.
+3. **Click the pinned FoodForThought icon once** and wait up to a minute.
+   Linux starts first, then FoodForThought opens in Chrome.
+4. **If nothing opens after a minute,** open the Terminal and type
+   `tail -n 30 .cache/foodforthought-launch.log`, press Enter, and send me a
+   screenshot.
+
 ## Automatic backups, income export, kept invoices and comfort
 
 1. **Update from the app.** Download an encrypted backup, then Settings →

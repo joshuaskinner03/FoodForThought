@@ -2,6 +2,12 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+if [ "${1:-}" = "--launch" ]; then
+  mkdir -p "$HOME/.cache"
+  exec >>"$HOME/.cache/foodforthought-launch.log" 2>&1
+  echo "$(date '+%Y-%m-%d %H:%M:%S') start.sh --launch in $(pwd)"
+fi
+
 PY="${PYTHON:-python3}"
 
 if ! command -v "$PY" >/dev/null 2>&1; then

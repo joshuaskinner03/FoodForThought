@@ -48,14 +48,19 @@ def main(argv: list[str] | None = None) -> None:
             print("FoodForThought is now in the launcher. On a Chromebook it is in the Linux apps folder.")
         return
 
+    if args.launch:
+        launcher.note(f"launch {__version__}: data {cfg.data_dir}")
     if not _port_free(cfg.port):
         if launcher.is_running(cfg.port):
             if args.launch:
-                webbrowser.open(url)
+                launcher.note("already running")
+                launcher.open_browser(url)
                 return
             print(f"FoodForThought is already running. Open {url} in Chrome.")
         else:
             print(f"Port {cfg.port} is in use by another program. Try --port 8766.")
+            if args.launch:
+                launcher.note(f"port {cfg.port} is in use by another program")
         sys.exit(1)
 
     if args.launch:
@@ -66,7 +71,16 @@ def main(argv: list[str] | None = None) -> None:
     print(f"FoodForThought {__version__}")
     print(f"Data folder: {cfg.data_dir}")
     print(f"Open {url} in Chrome. Press Ctrl+C here to stop.")
-    if not args.no_browser:
+    if args.launch:
+        def opener() -> None:
+            if launcher.wait_until_running(cfg.port):
+                launcher.note("server answering")
+                launcher.open_browser(url)
+            else:
+                launcher.note("server did not answer within a minute")
+
+        threading.Thread(target=opener, daemon=True).start()
+    elif not args.no_browser:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     uvicorn.run(app, host="127.0.0.1", port=cfg.port, log_level="warning", access_log=False)
 
