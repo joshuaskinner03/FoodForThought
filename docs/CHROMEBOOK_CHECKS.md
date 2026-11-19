@@ -4,18 +4,17 @@ Do these in order. Note anything that differs from "Expect".
 
 ## Opening from the icon after a restart
 
-1. **Open FoodForThought the way that works now:** open the Terminal app
-   first, then click the pinned icon.
-2. **Update from the app** (Settings → This app → Check for updates →
-   Update and restart). Expect version 0.8.3. The update sets Linux to start
-   FoodForThought by itself.
-3. **Restart the Chromebook.** Do not open the Terminal.
-4. **Click the pinned FoodForThought icon once** and wait up to a minute.
-   Linux starts, then FoodForThought opens in Chrome by itself.
-5. FoodForThought now also opens whenever Linux starts, for example when you
-   open the Terminal. That is expected.
-6. **If nothing opens after a minute,** open the Terminal and type
-   `tail -n 30 .cache/foodforthought-launch.log`, press Enter, and send me a
+1. **Update from the app** (Settings → This app → Check for updates →
+   Update and restart). Expect version 0.8.4.
+2. **Restart the Chromebook.**
+3. **Click the Terminal icon** to start Linux. Within about 15 seconds,
+   FoodForThought opens in Chrome by itself. Close the Terminal window if
+   you like; FoodForThought keeps running.
+4. **Click the FoodForThought icon** too. Expect it to open (or come to
+   the front) straight away.
+5. **If Chrome shows "not running"** while FoodForThought should be
+   running, type `systemctl --user restart foodforthought` in the Terminal,
+   then `tail -n 30 .cache/foodforthought-launch.log`, and send me a
    screenshot.
 
 ## Automatic backups, income export, kept invoices and comfort

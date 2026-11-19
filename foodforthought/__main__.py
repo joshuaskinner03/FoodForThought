@@ -77,6 +77,8 @@ def main(argv: list[str] | None = None) -> None:
 
     if background:
         launcher.log_to(cfg.data_dir / "app.log")
+    if args.service:
+        launcher.wait_for_port_forwarding()
     launcher.refresh_icons()
     launcher.ensure_service(cfg.data_dir, cfg.port, DEFAULT_PORT)
 

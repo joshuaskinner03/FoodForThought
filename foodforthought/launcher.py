@@ -33,6 +33,9 @@ StartupNotify=false
 LOG_LINES = 300
 SERVICE = "foodforthought.service"
 RECENT_SECONDS = 45
+FORWARDER = "cros-port-listener.service"
+FORWARDER_WAIT = 90
+FORWARDER_SETTLE = 5
 SERVICE_UNIT = """[Unit]
 Description=FoodForThought
 
@@ -236,6 +239,34 @@ def session_env() -> dict:
 def systemctl(*args: str) -> bool:
     tool = _tool("systemctl")
     return bool(tool) and _run([tool, "--user", *args], session_env())
+
+
+def unit_property(unit: str, name: str, user: bool) -> str:
+    tool = _tool("systemctl")
+    if not tool:
+        return ""
+    command = [tool, *(["--user"] if user else []), "show", "-p", name, "--value", unit]
+    try:
+        done = subprocess.run(command, capture_output=True, text=True, timeout=10, env=session_env())
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return done.stdout.strip() if done.returncode == 0 else ""
+
+
+def wait_for_port_forwarding(seconds: float = FORWARDER_WAIT, pause: float = 0.5) -> bool:
+    scopes = [user for user in (False, True) if unit_property(FORWARDER, "LoadState", user) == "loaded"]
+    if not scopes:
+        return False
+    note("waiting for ChromeOS port forwarding")
+    end = time.monotonic() + seconds
+    while time.monotonic() < end:
+        if any(unit_property(FORWARDER, "ActiveState", user) == "active" for user in scopes):
+            time.sleep(FORWARDER_SETTLE)
+            note("ChromeOS port forwarding is ready")
+            return True
+        time.sleep(pause)
+    note("ChromeOS port forwarding did not start in time; starting anyway")
+    return False
 
 
 def install_service(data_dir: Path, port: int, default_port: int) -> bool:
