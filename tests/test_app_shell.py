@@ -73,7 +73,7 @@ def test_exec_quoting(arg, expected):
 
 def test_launcher_buttons_in_settings(unlocked, xdg):
     page = unlocked.get("/settings").text
-    assert "This app" in page and "Version 0.8.1" in page and "Add to the launcher" in page
+    assert "This app" in page and "Version 0.8.2" in page and "Add to the launcher" in page
     done = unlocked.post("/settings/launcher")
     assert done.headers["location"] == "/settings?msg=launcher-added#this-app"
     assert (xdg / "applications" / "foodforthought.desktop").exists()
@@ -90,8 +90,9 @@ def test_command_line_install_and_launch(xdg, tmp_path, monkeypatch, capsys):
     assert not (xdg / "applications" / "foodforthought.desktop").exists()
 
     opened = []
+    monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setattr(cli, "_port_free", lambda port: False)
-    monkeypatch.setattr(cli.webbrowser, "open", opened.append)
+    monkeypatch.setattr(launcher, "open_browser", opened.append)
     monkeypatch.setattr(launcher, "is_running", lambda port: True)
     cli.main(["--launch", "--data", str(tmp_path / "d")])
     assert opened == ["http://localhost:8765"]
@@ -177,7 +178,7 @@ def test_not_a_git_copy(unlocked, tmp_path, monkeypatch):
 
 def test_check_and_update(unlocked, repos, cfg):
     page = unlocked.get("/updates").text
-    assert "Check for updates" in page and "This is version 0.8.1 (" in page
+    assert "Check for updates" in page and "This is version 0.8.2 (" in page
     unlocked.post("/updates/check")
     assert "You have the latest version." in unlocked.get("/updates").text
     assert unlocked.post("/updates/apply").headers["location"] == "/updates"
@@ -242,3 +243,54 @@ def test_check_without_a_connection(unlocked, repos):
 def test_updates_need_unlocking(client):
     assert client.get("/updates").headers["location"] in ("/setup", "/unlock")
     assert client.post("/updates/check").status_code in (303, 204)
+
+
+def test_open_browser_retries_and_logs(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setattr(launcher.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(launcher, "_tool", lambda name: f"/usr/bin/{name}" if name == "garcon-url-handler" else None)
+    results = iter([False, False, True])
+    calls = []
+    monkeypatch.setattr(launcher, "_run", lambda command: calls.append(command) or next(results))
+    assert launcher.open_browser("http://localhost:8765")
+    assert calls[0] == ["/usr/bin/garcon-url-handler", "http://localhost:8765"] and len(calls) == 3
+    log = launcher.launch_log().read_text()
+    assert "could not open http://localhost:8765 yet (attempt 2)" in log and "with garcon-url-handler (attempt 3)" in log
+
+    monkeypatch.setattr(launcher, "_run", lambda command: False)
+    assert not launcher.open_browser("http://localhost:8765", attempts=2)
+
+    opened = []
+    monkeypatch.setattr(launcher, "_tool", lambda name: None)
+    monkeypatch.setattr(launcher.webbrowser, "open", lambda url: opened.append(url) or True)
+    assert launcher.open_browser("http://localhost:8765") and opened == ["http://localhost:8765"]
+
+
+def test_launch_log_is_kept_short(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    for n in range(launcher.LOG_LINES + 50):
+        launcher.note(f"line {n}")
+    lines = launcher.launch_log().read_text().splitlines()
+    assert len(lines) == launcher.LOG_LINES + 1 and lines[-1].endswith(f"line {launcher.LOG_LINES + 49}")
+
+
+def test_wait_until_running(monkeypatch):
+    answers = iter([False, False, True])
+    monkeypatch.setattr(launcher, "is_running", lambda port: next(answers))
+    monkeypatch.setattr(launcher.time, "sleep", lambda seconds: None)
+    assert launcher.wait_until_running(8765)
+    monkeypatch.setattr(launcher, "is_running", lambda port: False)
+    assert not launcher.wait_until_running(8765, seconds=0.05, pause=0.01)
+
+
+def test_icons_are_only_rewritten_after_a_change(xdg, tmp_path):
+    launcher.install(tmp_path / "data", 8765, 8765)
+    largest = launcher.icon_paths()[-1]
+    old = largest.stat().st_mtime - 100
+    import os
+    os.utime(largest, (old + 200, old + 200))
+    launcher.refresh_icons()
+    assert largest.stat().st_mtime == old + 200
+    os.utime(largest, (1, 1))
+    launcher.refresh_icons()
+    assert largest.stat().st_mtime > 1
