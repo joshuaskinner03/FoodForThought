@@ -21,7 +21,18 @@ from .conftest import FAST_KDF, PASSWORD, core_of
 def xdg(tmp_path, monkeypatch):
     home = tmp_path / "share"
     monkeypatch.setenv("XDG_DATA_HOME", str(home))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
     return home
+
+
+@pytest.fixture
+def systemd(monkeypatch):
+    calls = []
+    real_run = launcher._run
+    monkeypatch.setattr(launcher, "_tool", lambda name: f"/usr/bin/{name}" if name == "systemctl" else None)
+    monkeypatch.setattr(launcher, "_run", lambda command, env=None: calls.append(command[2:]) or True if command[0].endswith("systemctl") else real_run(command))
+    return calls
 
 
 def test_manifest_worker_and_offline_page_need_no_password(client):
@@ -43,7 +54,7 @@ def test_manifest_worker_and_offline_page_need_no_password(client):
     assert '<link rel="manifest" href="/manifest.webmanifest">' in page and "favicon-32.png" in page
 
 
-def test_desktop_entry(xdg, tmp_path):
+def test_desktop_entry(xdg, tmp_path, systemd):
     entry = launcher.install(tmp_path / "my data", 8765, 8765)
     text = entry.read_text()
     assert entry == xdg / "applications" / "foodforthought.desktop"
@@ -71,9 +82,9 @@ def test_exec_quoting(arg, expected):
     assert launcher.exec_arg(arg) == expected
 
 
-def test_launcher_buttons_in_settings(unlocked, xdg):
+def test_launcher_buttons_in_settings(unlocked, xdg, systemd):
     page = unlocked.get("/settings").text
-    assert "This app" in page and "Version 0.8.2" in page and "Add to the launcher" in page
+    assert "This app" in page and "Version 0.8.3" in page and "Add to the launcher" in page
     done = unlocked.post("/settings/launcher")
     assert done.headers["location"] == "/settings?msg=launcher-added#this-app"
     assert (xdg / "applications" / "foodforthought.desktop").exists()
@@ -83,7 +94,7 @@ def test_launcher_buttons_in_settings(unlocked, xdg):
     assert not (xdg / "applications" / "foodforthought.desktop").exists()
 
 
-def test_command_line_install_and_launch(xdg, tmp_path, monkeypatch, capsys):
+def test_command_line_install_and_launch(xdg, tmp_path, monkeypatch, capsys, systemd):
     cli.main(["--install-app", "--data", str(tmp_path / "d")])
     assert (xdg / "applications" / "foodforthought.desktop").exists() and "now in the launcher" in capsys.readouterr().out
     cli.main(["--remove-app"])
@@ -178,7 +189,7 @@ def test_not_a_git_copy(unlocked, tmp_path, monkeypatch):
 
 def test_check_and_update(unlocked, repos, cfg):
     page = unlocked.get("/updates").text
-    assert "Check for updates" in page and "This is version 0.8.2 (" in page
+    assert "Check for updates" in page and "This is version 0.8.3 (" in page
     unlocked.post("/updates/check")
     assert "You have the latest version." in unlocked.get("/updates").text
     assert unlocked.post("/updates/apply").headers["location"] == "/updates"
@@ -251,13 +262,13 @@ def test_open_browser_retries_and_logs(tmp_path, monkeypatch):
     monkeypatch.setattr(launcher, "_tool", lambda name: f"/usr/bin/{name}" if name == "garcon-url-handler" else None)
     results = iter([False, False, True])
     calls = []
-    monkeypatch.setattr(launcher, "_run", lambda command: calls.append(command) or next(results))
+    monkeypatch.setattr(launcher, "_run", lambda command, env=None: calls.append(command) or next(results))
     assert launcher.open_browser("http://localhost:8765")
     assert calls[0] == ["/usr/bin/garcon-url-handler", "http://localhost:8765"] and len(calls) == 3
     log = launcher.launch_log().read_text()
     assert "could not open http://localhost:8765 yet (attempt 2)" in log and "with garcon-url-handler (attempt 3)" in log
 
-    monkeypatch.setattr(launcher, "_run", lambda command: False)
+    monkeypatch.setattr(launcher, "_run", lambda command, env=None: False)
     assert not launcher.open_browser("http://localhost:8765", attempts=2)
 
     opened = []
@@ -283,7 +294,7 @@ def test_wait_until_running(monkeypatch):
     assert not launcher.wait_until_running(8765, seconds=0.05, pause=0.01)
 
 
-def test_icons_are_only_rewritten_after_a_change(xdg, tmp_path):
+def test_icons_are_only_rewritten_after_a_change(xdg, tmp_path, systemd):
     launcher.install(tmp_path / "data", 8765, 8765)
     largest = launcher.icon_paths()[-1]
     old = largest.stat().st_mtime - 100
@@ -294,3 +305,70 @@ def test_icons_are_only_rewritten_after_a_change(xdg, tmp_path):
     os.utime(largest, (1, 1))
     launcher.refresh_icons()
     assert largest.stat().st_mtime > 1
+
+
+def test_service_starts_with_linux(xdg, tmp_path, systemd):
+    launcher.install(tmp_path / "my data", 8765, 8765)
+    unit = launcher.service_path().read_text()
+    assert launcher.service_path() == tmp_path / "config" / "systemd" / "user" / "foodforthought.service"
+    assert f'ExecStart=/bin/bash {launcher.PROGRAM_DIR / "start.sh"} --service --data "{tmp_path / "my data"}"' in unit
+    assert "WantedBy=default.target" in unit and "Restart=on-failure" in unit
+    assert systemd == [["daemon-reload"], ["enable", "foodforthought.service"]]
+    assert launcher.start_service() and systemd[-1] == ["start", "foodforthought.service"]
+    assert launcher.remove() and not launcher.service_installed()
+    assert ["disable", "foodforthought.service"] in systemd
+    assert not launcher.start_service()
+
+
+def test_existing_launchers_get_the_service(xdg, tmp_path, systemd, monkeypatch):
+    launcher.install(tmp_path / "d", 8765, 8765)
+    launcher.service_path().unlink()
+    launcher.ensure_service(tmp_path / "d", 8765, 8765)
+    assert launcher.service_installed()
+    systemd.clear()
+    launcher.ensure_service(tmp_path / "d", 8765, 8765)
+    assert systemd == [["is-enabled", "foodforthought.service"]]
+    monkeypatch.setattr(launcher, "systemctl", lambda *args: args[0] != "is-enabled" and systemd.append(list(args)) is None)
+    launcher.ensure_service(tmp_path / "d", 8765, 8765)
+    assert ["enable", "foodforthought.service"] in systemd
+    monkeypatch.setattr(launcher, "systemctl", lambda *args: True)
+    launcher.remove()
+    launcher.ensure_service(tmp_path / "d", 8765, 8765)
+    assert not launcher.service_installed()
+
+
+@pytest.mark.parametrize("arg, expected", [("/home/jo/fft/start.sh", "/home/jo/fft/start.sh"), ("/home/jo/my data", '"/home/jo/my data"'), ('/a"b', '"/a\\"b"'), ("/100%", "/100%%")])
+def test_unit_quoting(arg, expected):
+    assert launcher.unit_arg(arg) == expected
+
+
+def test_launch_through_the_service(xdg, tmp_path, monkeypatch, systemd):
+    launcher.install(tmp_path / "d", 8765, 8765)
+    opened = []
+    monkeypatch.setattr(cli, "_port_free", lambda port: True)
+    monkeypatch.setattr(launcher, "wait_until_running", lambda port, seconds=60: True)
+    monkeypatch.setattr(launcher, "open_browser", opened.append)
+    cli.main(["--launch", "--data", str(tmp_path / "d")])
+    assert systemd[-1] == ["start", "foodforthought.service"] and opened == []
+    assert "the service opens the page" in launcher.launch_log().read_text()
+
+    monkeypatch.setattr(cli, "_port_free", lambda port: False)
+    monkeypatch.setattr(launcher, "is_running", lambda port: True)
+    cli.main(["--service", "--data", str(tmp_path / "d")])
+    assert opened == []
+    cli.main(["--launch", "--data", str(tmp_path / "d")])
+    assert opened == ["http://localhost:8765"]
+    launcher.opened_stamp().parent.mkdir(parents=True, exist_ok=True)
+    launcher.opened_stamp().touch()
+    cli.main(["--launch", "--data", str(tmp_path / "d")])
+    assert opened == ["http://localhost:8765"]
+
+
+def test_session_details_for_systemctl(monkeypatch):
+    monkeypatch.delenv("XDG_RUNTIME_DIR", raising=False)
+    monkeypatch.delenv("DBUS_SESSION_BUS_ADDRESS", raising=False)
+    env = launcher.session_env()
+    if env.get("XDG_RUNTIME_DIR"):
+        assert env["DBUS_SESSION_BUS_ADDRESS"] == f"unix:path={env['XDG_RUNTIME_DIR']}/bus"
+    monkeypatch.setenv("XDG_RUNTIME_DIR", "/run/user/1000")
+    assert launcher.session_env()["DBUS_SESSION_BUS_ADDRESS"] == "unix:path=/run/user/1000/bus"

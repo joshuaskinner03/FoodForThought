@@ -2,10 +2,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-if [ "${1:-}" = "--launch" ]; then
+if [ "${1:-}" = "--launch" ] || [ "${1:-}" = "--service" ]; then
   mkdir -p "$HOME/.cache"
   exec >>"$HOME/.cache/foodforthought-launch.log" 2>&1
-  echo "$(date '+%Y-%m-%d %H:%M:%S') start.sh --launch in $(pwd)"
+  echo "$(date '+%Y-%m-%d %H:%M:%S') start.sh ${1} in $(pwd)"
 fi
 
 PY="${PYTHON:-python3}"

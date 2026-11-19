@@ -44,9 +44,12 @@ Options: `--port 8765`, `--data /path/to/folder`, `--no-browser`, `--launch`
 adds a FoodForThought icon to the app launcher. On a Chromebook it appears in
 the Linux apps folder and can be pinned to the shelf. Clicking it starts
 FoodForThought in the background if it is not already running and opens it
-in Chrome; no Terminal is needed. After the Chromebook restarts, the first
-click also starts Linux, which can take up to a minute: the icon waits for
-FoodForThought to answer, then keeps trying to open the page for a minute.
+in Chrome; no Terminal is needed. Adding the icon also adds a Linux user
+service (`~/.config/systemd/user/foodforthought.service`), so FoodForThought
+starts by itself whenever Linux starts and opens its page once ready. After
+the Chromebook restarts, ChromeOS may start Linux on the first click without
+running the icon's own command; the service covers that. The icon itself
+starts the service if it is stopped, and waits up to a minute for it.
 Each launch step is noted in `.cache/foodforthought-launch.log` in the Linux
 home folder, and start-up messages and errors go to `app.log` in the data
 folder.
